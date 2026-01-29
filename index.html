@@ -28,7 +28,7 @@
 
         .snap-item {
             scroll-snap-align: start;
-            scroll-snap-stop: normal; /* Alterado de 'always' para 'normal' */
+            scroll-snap-stop: always;
             height: 100vh;
             width: 100vw;
             position: relative;
@@ -37,8 +37,6 @@
             justify-content: center;
             background: #000;
             flex-shrink: 0;
-            will-change: transform;
-            transform: translateZ(0);
         }
 
         .meme-bg-blur {
@@ -140,9 +138,9 @@
             return div;
         }
 
-        // Inicializar com múltiplas cópias para garantir loop infinito
+        // Inicializar com 3 cópias para garantir que o scroll nunca bata no limite
         function init() {
-            // Criamos uma lista longa inicial (15 itens = 5 cópias de cada)
+            // Criamos uma lista longa inicial
             for(let i = 0; i < 5; i++) {
                 originalData.forEach(m => {
                     feed.appendChild(createItemElement(m));
@@ -150,106 +148,43 @@
             }
             lucide.createIcons();
             
-            // Centralizar o scroll no meio da lista
-            const middleIndex = Math.floor(feed.children.length / 2);
-            scrollToIndex(middleIndex);
+            // Centralizar o scroll
+            const middle = Math.floor(feed.children.length / 2);
+            feed.scrollTop = middle * window.innerHeight;
 
             feed.addEventListener('dblclick', handleZap);
         }
 
         let isAdjusting = false;
-        let scrollTimeout = null;
-        let currentIndex = 0;
-
-        // Função para rolar para um índice específico
-        function scrollToIndex(index) {
-            const itemHeight = window.innerHeight;
-            feed.scrollTop = index * itemHeight;
-            currentIndex = index;
-        }
 
         feed.addEventListener('scroll', () => {
             if (isAdjusting) return;
-            
-            // Limpa timeout anterior para evitar execuções múltiplas
-            if (scrollTimeout) clearTimeout(scrollTimeout);
-            
-            // Agenda a verificação após o scroll inercial
-            scrollTimeout = setTimeout(() => {
-                const itemHeight = window.innerHeight;
-                const scrollTop = feed.scrollTop;
-                const totalItems = feed.children.length;
-                const currentScrollIndex = Math.round(scrollTop / itemHeight);
-                
-                // Atualiza o índice atual
-                currentIndex = currentScrollIndex;
-                
-                // Margem de segurança aumentada (3 telas em cada extremidade)
-                const buffer = 3;
-                
-                // Se estiver perto do topo (primeiros itens)
-                if (currentScrollIndex < buffer) {
-                    performLoopAdjustment('toTop');
-                }
-                // Se estiver perto do final (últimos itens)
-                else if (currentScrollIndex > totalItems - buffer - 1) {
-                    performLoopAdjustment('toBottom');
-                }
-            }, 100);
-        });
 
-        function performLoopAdjustment(direction) {
-            if (isAdjusting) return;
-            
-            isAdjusting = true;
-            
-            // Desativa temporariamente o scroll-snap para evitar conflitos
-            feed.style.scrollSnapType = 'none';
-            
             const itemHeight = window.innerHeight;
             const scrollTop = feed.scrollTop;
-            
-            if (direction === 'toTop') {
-                // Move blocos de itens do final para o início
-                const itemsToMove = originalData.length * 2; // Move 2 conjuntos completos
-                
-                for(let i = 0; i < itemsToMove; i++) {
-                    const lastItem = feed.lastElementChild;
-                    feed.insertBefore(lastItem, feed.firstElementChild);
-                }
-                
-                // Ajusta a posição do scroll mantendo a posição visual
-                requestAnimationFrame(() => {
-                    feed.scrollTop = scrollTop + (itemsToMove * itemHeight);
-                    currentIndex += itemsToMove;
-                    reenableScrollSnap();
-                });
-                
-            } else if (direction === 'toBottom') {
-                // Move blocos de itens do início para o final
-                const itemsToMove = originalData.length * 2;
-                
-                for(let i = 0; i < itemsToMove; i++) {
-                    const firstItem = feed.firstElementChild;
-                    feed.appendChild(firstItem);
-                }
-                
-                // Ajusta a posição do scroll mantendo a posição visual
-                requestAnimationFrame(() => {
-                    feed.scrollTop = scrollTop - (itemsToMove * itemHeight);
-                    currentIndex -= itemsToMove;
-                    reenableScrollSnap();
-                });
-            }
-        }
+            const threshold = itemHeight * 2; // Margem de segurança de 2 ecrãs
 
-        function reenableScrollSnap() {
-            // Reativa o scroll-snap após um pequeno delay
-            setTimeout(() => {
-                feed.style.scrollSnapType = 'y mandatory';
+            // Se estiver a chegar ao topo, movemos os últimos itens para o início
+            if (scrollTop < threshold) {
+                isAdjusting = true;
+                for(let i = 0; i < originalData.length; i++) {
+                    const last = feed.lastElementChild;
+                    feed.prepend(last);
+                }
+                feed.scrollTop = scrollTop + (originalData.length * itemHeight);
                 isAdjusting = false;
-            }, 50);
-        }
+            } 
+            // Se estiver a chegar ao fim, movemos os primeiros itens para o final
+            else if (scrollTop > feed.scrollHeight - threshold - itemHeight) {
+                isAdjusting = true;
+                for(let i = 0; i < originalData.length; i++) {
+                    const first = feed.firstElementChild;
+                    feed.appendChild(first);
+                }
+                feed.scrollTop = scrollTop - (originalData.length * itemHeight);
+                isAdjusting = false;
+            }
+        });
 
         function handleZap(e) {
             const zap = document.createElement('div');
@@ -262,22 +197,13 @@
             setTimeout(() => zap.remove(), 500);
         }
 
-        // Inicialização quando a janela carrega
-        window.addEventListener('load', init);
+        window.onload = init;
 
         // Resetar posição no resize para evitar quebras
         window.addEventListener('resize', () => {
-            if (!isAdjusting) {
-                scrollToIndex(currentIndex);
-            }
+            const middle = Math.floor(feed.children.length / 2);
+            feed.scrollTop = middle * window.innerHeight;
         });
-
-        // Previne comportamento padrão de overscroll no mobile
-        feed.addEventListener('touchmove', (e) => {
-            if (isAdjusting) {
-                e.preventDefault();
-            }
-        }, { passive: false });
     </script>
 </body>
 </html>
