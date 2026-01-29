@@ -83,35 +83,64 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        /* Notificação de Upload */
+        #uploadStatus {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: #fbbf24;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        }
     </style>
 </head>
 <body class="text-white select-none">
 
+    <div id="uploadStatus">MEME ENVIADO COM SUCESSO!</div>
+
     <div id="feed" class="no-scrollbar">
         <!-- Os itens serão gerados dinamicamente -->
     </div>
+
+    <!-- Input de Ficheiro Escondido -->
+    <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <!-- UI Fixa -->
     <nav class="fixed bottom-10 left-0 right-0 flex justify-center items-center gap-6 z-50">
         <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
             <i data-lucide="layout-grid" class="w-6 h-6 opacity-40"></i>
         </button>
-        <button class="bg-white text-black h-14 px-12 rounded-full font-black text-[11px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
+        
+        <!-- Botão de Upload Conectado ao Input -->
+        <button id="uploadBtn" class="bg-white text-black h-14 px-12 rounded-full font-black text-[11px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
             UPLOAD
         </button>
+
         <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
             <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
         </button>
     </nav>
 
     <script>
-        const originalData = [
+        // Dados iniciais (Mock de Base de Dados)
+        let originalData = [
             { id: 1, url: "https://images.unsplash.com/photo-1634128221889-82ed6efebfc3?q=80&w=1000", asset: "WOWNERO", rewards: "4.2k" },
             { id: 2, url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000", asset: "SOLANA", rewards: "15k" },
             { id: 3, url: "https://images.unsplash.com/photo-1644023746ce53-64906000021c?q=80&w=1000", asset: "BITCOIN", rewards: "2.1k" }
         ];
 
         const feed = document.getElementById('feed');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusMsg = document.getElementById('uploadStatus');
         
         function createItemElement(m) {
             const div = document.createElement('div');
@@ -122,12 +151,12 @@
                 <div class="overlay">
                     <div class="absolute bottom-40 left-10">
                         <span class="bg-white text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">${m.asset} ART</span>
-                        <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">True<br>Infinite</h2>
+                        <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">User<br>Upload</h2>
                     </div>
                     <div class="absolute right-8 bottom-40 flex flex-col items-center gap-10">
                         <button class="flex flex-col items-center group active:scale-110 transition-transform">
                             <i data-lucide="zap" class="w-8 h-8 opacity-40 group-active:fill-yellow-500 group-active:text-yellow-500"></i>
-                            <span class="text-[9px] font-black mt-2 tracking-widest opacity-40">${m.rewards}</span>
+                            <span class="text-[9px] font-black mt-2 tracking-widest opacity-40">${m.rewards || '0'}</span>
                         </button>
                         <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
                             <i data-lucide="arrow-up-right" class="w-8 h-8 font-bold"></i>
@@ -138,33 +167,61 @@
             return div;
         }
 
-        // Inicializar com 3 cópias para garantir que o scroll nunca bata no limite
-        function init() {
-            // Criamos uma lista longa inicial
+        // Função para Renderizar o Feed
+        function renderFeed() {
+            feed.innerHTML = '';
+            // Criamos 5 repetições para o loop infinito funcionar sem falhas
             for(let i = 0; i < 5; i++) {
                 originalData.forEach(m => {
                     feed.appendChild(createItemElement(m));
                 });
             }
             lucide.createIcons();
-            
-            // Centralizar o scroll
             const middle = Math.floor(feed.children.length / 2);
             feed.scrollTop = middle * window.innerHeight;
+        }
 
+        // Inicializar
+        function init() {
+            renderFeed();
             feed.addEventListener('dblclick', handleZap);
         }
 
-        let isAdjusting = false;
+        // Lógica de Upload
+        uploadBtn.addEventListener('click', () => fileInput.click());
 
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                
+                // Adiciona o novo meme ao início da lista original
+                const newMeme = {
+                    id: Date.now(),
+                    url: url,
+                    asset: "NEW ART",
+                    rewards: "0"
+                };
+                
+                originalData = [newMeme, ...originalData];
+                
+                // Feedback visual
+                statusMsg.style.display = 'block';
+                setTimeout(() => statusMsg.style.display = 'none', 3000);
+                
+                // Re-renderiza o feed com o novo item
+                renderFeed();
+            }
+        });
+
+        // Lógica de Loop Infinito
+        let isAdjusting = false;
         feed.addEventListener('scroll', () => {
             if (isAdjusting) return;
-
             const itemHeight = window.innerHeight;
             const scrollTop = feed.scrollTop;
-            const threshold = itemHeight * 2; // Margem de segurança de 2 ecrãs
+            const threshold = itemHeight * 2;
 
-            // Se estiver a chegar ao topo, movemos os últimos itens para o início
             if (scrollTop < threshold) {
                 isAdjusting = true;
                 for(let i = 0; i < originalData.length; i++) {
@@ -174,7 +231,6 @@
                 feed.scrollTop = scrollTop + (originalData.length * itemHeight);
                 isAdjusting = false;
             } 
-            // Se estiver a chegar ao fim, movemos os primeiros itens para o final
             else if (scrollTop > feed.scrollHeight - threshold - itemHeight) {
                 isAdjusting = true;
                 for(let i = 0; i < originalData.length; i++) {
@@ -198,12 +254,7 @@
         }
 
         window.onload = init;
-
-        // Resetar posição no resize para evitar quebras
-        window.addEventListener('resize', () => {
-            const middle = Math.floor(feed.children.length / 2);
-            feed.scrollTop = middle * window.innerHeight;
-        });
+        window.addEventListener('resize', () => renderFeed());
     </script>
 </body>
 </html>
