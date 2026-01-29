@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MemeTok - Zero Glitch Loop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; background: #000;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Contentor de scroll com snap */
+        #feed {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+            width: 100vw;
+            scroll-behavior: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        .snap-item {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            flex-shrink: 0;
+        }
+
+        .meme-bg-blur {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(60px) brightness(0.15);
+            transform: scale(1.2);
+            z-index: 0;
+        }
+
+        .meme-main {
+            position: relative;
+            z-index: 10;
+            max-height: 85vh;
+            max-width: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        /* Animação de Zap (Like) */
+        @keyframes zapIn {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(0deg); opacity: 0; }
+        }
+        .zap-anim { animation: zapIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 40%, transparent 100%);
+        }
+        
+        .overlay button { pointer-events: auto; }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="text-white select-none">
+
+    <div id="feed" class="no-scrollbar">
+        <!-- Os itens serão gerados dinamicamente -->
+    </div>
+
+    <!-- UI Fixa -->
+    <nav class="fixed bottom-10 left-0 right-0 flex justify-center items-center gap-6 z-50">
+        <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="layout-grid" class="w-6 h-6 opacity-40"></i>
+        </button>
+        <button class="bg-white text-black h-14 px-12 rounded-full font-black text-[11px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
+            UPLOAD
+        </button>
+        <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+        </button>
+    </nav>
+
+    <script>
+        const originalData = [
+            { id: 1, url: "https://images.unsplash.com/photo-1634128221889-82ed6efebfc3?q=80&w=1000", asset: "WOWNERO", rewards: "4.2k" },
+            { id: 2, url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000", asset: "SOLANA", rewards: "15k" },
+            { id: 3, url: "https://images.unsplash.com/photo-1644023746ce53-64906000021c?q=80&w=1000", asset: "BITCOIN", rewards: "2.1k" }
+        ];
+
+        const feed = document.getElementById('feed');
+        
+        function createItemElement(m) {
+            const div = document.createElement('div');
+            div.className = 'snap-item';
+            div.innerHTML = `
+                <img src="${m.url}" class="meme-bg-blur" loading="lazy">
+                <img src="${m.url}" class="meme-main" loading="eager">
+                <div class="overlay">
+                    <div class="absolute bottom-40 left-10">
+                        <span class="bg-white text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">${m.asset} ART</span>
+                        <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">True<br>Infinite</h2>
+                    </div>
+                    <div class="absolute right-8 bottom-40 flex flex-col items-center gap-10">
+                        <button class="flex flex-col items-center group active:scale-110 transition-transform">
+                            <i data-lucide="zap" class="w-8 h-8 opacity-40 group-active:fill-yellow-500 group-active:text-yellow-500"></i>
+                            <span class="text-[9px] font-black mt-2 tracking-widest opacity-40">${m.rewards}</span>
+                        </button>
+                        <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
+                            <i data-lucide="arrow-up-right" class="w-8 h-8 font-bold"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // Inicializar com 3 cópias para garantir que o scroll nunca bata no limite
+        function init() {
+            // Criamos uma lista longa inicial
+            for(let i = 0; i < 5; i++) {
+                originalData.forEach(m => {
+                    feed.appendChild(createItemElement(m));
+                });
+            }
+            lucide.createIcons();
+            
+            // Centralizar o scroll
+            const middle = Math.floor(feed.children.length / 2);
+            feed.scrollTop = middle * window.innerHeight;
+
+            feed.addEventListener('dblclick', handleZap);
+        }
+
+        let isAdjusting = false;
+
+        feed.addEventListener('scroll', () => {
+            if (isAdjusting) return;
+
+            const itemHeight = window.innerHeight;
+            const scrollTop = feed.scrollTop;
+            const threshold = itemHeight * 2; // Margem de segurança de 2 ecrãs
+
+            // Se estiver a chegar ao topo, movemos os últimos itens para o início
+            if (scrollTop < threshold) {
+                isAdjusting = true;
+                for(let i = 0; i < originalData.length; i++) {
+                    const last = feed.lastElementChild;
+                    feed.prepend(last);
+                }
+                feed.scrollTop = scrollTop + (originalData.length * itemHeight);
+                isAdjusting = false;
+            } 
+            // Se estiver a chegar ao fim, movemos os primeiros itens para o final
+            else if (scrollTop > feed.scrollHeight - threshold - itemHeight) {
+                isAdjusting = true;
+                for(let i = 0; i < originalData.length; i++) {
+                    const first = feed.firstElementChild;
+                    feed.appendChild(first);
+                }
+                feed.scrollTop = scrollTop - (originalData.length * itemHeight);
+                isAdjusting = false;
+            }
+        });
+
+        function handleZap(e) {
+            const zap = document.createElement('div');
+            zap.innerHTML = '<i data-lucide="zap" class="w-24 h-24 text-yellow-500 fill-yellow-500"></i>';
+            zap.className = 'fixed zap-anim z-[100] pointer-events-none';
+            zap.style.left = `${e.clientX - 48}px`;
+            zap.style.top = `${e.clientY - 48}px`;
+            document.body.appendChild(zap);
+            lucide.createIcons();
+            setTimeout(() => zap.remove(), 500);
+        }
+
+        window.onload = init;
+
+        // Resetar posição no resize para evitar quebras
+        window.addEventListener('resize', () => {
+            const middle = Math.floor(feed.children.length / 2);
+            feed.scrollTop = middle * window.innerHeight;
+        });
+    </script>
+</body>
+</html>
