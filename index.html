@@ -50,18 +50,17 @@
             z-index: 0;
         }
 
-        /* Ajuste de 10% para cima na imagem principal */
         .meme-main {
             position: relative;
             z-index: 10;
-            max-height: 80vh;
-            max-width: 90%;
+            max-height: 70vh; /* Reduzido para dar espaço à UI mobile */
+            max-width: 95%;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             opacity: 0;
             transition: opacity 0.5s ease;
-            transform: translateY(-10%);
+            transform: translateY(-12%); /* Leve ajuste vertical para centralização visual */
         }
 
         .overlay {
@@ -69,13 +68,14 @@
             inset: 0;
             pointer-events: none;
             z-index: 20;
-            background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 100%);
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 50%, transparent 100%);
+            padding-bottom: env(safe-area-inset-bottom);
         }
         
         .overlay button, .reaction-container { pointer-events: auto; }
 
         .btn-glass {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -90,11 +90,16 @@
         }
 
         .emoji-icon {
-            font-size: 64px;
+            font-size: 52px; /* Reduzido para mobile */
             display: inline-block;
             text-shadow: 0 10px 20px rgba(0,0,0,0.5);
             animation: floatIdle 3s ease-in-out infinite;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @media (min-width: 768px) {
+            .emoji-icon { font-size: 64px; }
+            .meme-main { max-height: 80vh; transform: translateY(-10%); }
         }
 
         @keyframes floatIdle {
@@ -114,31 +119,32 @@
 
         #statusOverlay {
             position: fixed;
-            top: 20px;
+            top: env(safe-area-inset-top, 20px);
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
             background: #fbbf24;
             color: black;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 50px;
             font-weight: 900;
-            font-size: 11px;
+            font-size: 10px;
             display: none;
             box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
             letter-spacing: 0.1em;
+            white-space: nowrap;
         }
 
         #loadingOverlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 200;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
     </style>
 </head>
@@ -147,25 +153,26 @@
     <div id="statusOverlay">UPLOAD CONCLUÍDO! 🚀</div>
 
     <div id="loadingOverlay">
-        <div class="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p id="loadingText" class="text-[10px] font-black tracking-[0.4em]">PROCESSANDO IPFS...</p>
+        <div class="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p id="loadingText" class="text-[9px] font-black tracking-[0.4em] text-center px-4">PROCESSANDO IPFS...</p>
     </div>
 
     <div id="feed" class="no-scrollbar"></div>
 
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
-    <nav class="fixed bottom-10 left-0 right-0 flex justify-center items-center gap-6 z-50">
-        <button id="refreshBtn" class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="refresh-cw" class="w-6 h-6 opacity-40"></i>
+    <!-- Navegação Responsiva -->
+    <nav class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-4 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black to-transparent">
+        <button id="refreshBtn" class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="refresh-cw" class="w-5 h-5 md:w-6 md:h-6 opacity-60"></i>
         </button>
         
-        <button id="uploadBtn" class="bg-white text-black h-14 px-12 rounded-full font-black text-[11px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
+        <button id="uploadBtn" class="bg-white text-black h-12 md:h-14 px-8 md:px-12 rounded-full font-black text-[10px] md:text-[11px] tracking-[0.2em] md:tracking-[0.3em] shadow-2xl active:scale-95 transition-all uppercase">
             UPLOAD IPFS
         </button>
 
-        <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+        <button class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="trophy" class="w-5 h-5 md:w-6 md:h-6 text-yellow-500"></i>
         </button>
     </nav>
 
@@ -231,20 +238,20 @@
                 <img src="${m.url}" class="meme-bg-blur">
                 <img src="${m.url}" class="meme-main" onload="this.style.opacity=1" onerror="this.src='https://gateway.pinata.cloud/ipfs/${m.cid}'">
                 <div class="overlay">
-                    <div class="absolute bottom-40 left-10">
-                        <span class="bg-yellow-400 text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">IPFS STORAGE</span>
-                        <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
-                        <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid.substring(0,20)}...</p>
+                    <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
+                        <span class="bg-yellow-400 text-black px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-tighter uppercase mb-2 md:mb-3 inline-block italic">IPFS STORAGE</span>
+                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
+                        <p class="text-[7px] md:text-[8px] font-mono opacity-30 mt-2 truncate w-32 md:w-40">CID: ${m.cid.substring(0,20)}...</p>
                     </div>
-                    <div class="absolute right-8 bottom-44 flex flex-col items-center gap-4">
+                    <div class="absolute right-6 md:right-8 bottom-36 md:bottom-44 flex flex-col items-center gap-6 md:gap-4">
                         <div class="reaction-container" id="react-${m.cid}">
                             <span class="emoji-icon ${isLiked ? 'active' : ''}">${isLiked ? '😂' : '😐'}</span>
-                            <span class="reward-count text-[12px] font-black ${isLiked ? 'opacity-100 text-yellow-400' : 'opacity-60'} mt-[-5px] tabular-nums italic transition-all">
+                            <span class="reward-count text-[11px] md:text-[12px] font-black ${isLiked ? 'opacity-100 text-yellow-400' : 'opacity-60'} mt-[-5px] tabular-nums italic transition-all">
                                 ${isLiked ? m.rewards + 1 : m.rewards}
                             </span>
                         </div>
-                        <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform mt-4">
-                            <i data-lucide="share-2" class="w-7 h-7"></i>
+                        <button class="w-14 h-14 md:w-16 md:h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
+                            <i data-lucide="share-2" class="w-6 h-6 md:w-7 md:h-7"></i>
                         </button>
                     </div>
                 </div>
@@ -286,7 +293,10 @@
                     statusOverlay.style.display = 'none';
                     fetchPinataFiles();
                 }, 2000);
-            } catch (err) { alert("Erro: " + err.message); } 
+            } catch (err) { 
+                console.error(err);
+                alert("Erro ao subir arquivo. Verifique sua conexão."); 
+            } 
             finally { 
                 loadingOverlay.style.display = 'none'; 
                 fileInput.value = '';
