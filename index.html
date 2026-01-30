@@ -158,18 +158,19 @@
             canvas.width = 512;
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(256, 256, 245, 0, Math.PI * 2);
-            ctx.fill();
+            
+            // Fundo transparente (sem borda branca)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             ctx.save();
             ctx.translate(256, 256);
-            ctx.rotate(-Math.PI / 2); // Eixo corrigido (cabeça para cima)
-            ctx.font = '320px serif';
+            ctx.rotate(-Math.PI / 2); // Eixo corrigido
+            ctx.font = '400px serif'; // Aumentado um pouco para preencher o espaço
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(emoji, 0, 0);
             ctx.restore();
+            
             const texture = new THREE.CanvasTexture(canvas);
             texture.anisotropy = 16;
             return texture;
@@ -184,23 +185,25 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
-            const geometry = new THREE.CylinderGeometry(1.0, 1.0, 0.15, 64);
+            // Cilindro muito fino para sustentar a textura sem parecer um disco sólido
+            const geometry = new THREE.CylinderGeometry(1.0, 1.0, 0.05, 64);
             const texNeutral = createEmojiTexture('😐');
             const texLaugh = createEmojiTexture('😂');
             
-            const matFront = new THREE.MeshPhongMaterial({ map: texNeutral, shininess: 100 });
-            const matBack = new THREE.MeshPhongMaterial({ map: texNeutral, shininess: 100 });
-            const matSide = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            // Material com transparência habilitada
+            const matEmoji = new THREE.MeshPhongMaterial({ 
+                map: texNeutral, 
+                transparent: true, 
+                shininess: 0 
+            });
+            const matSide = new THREE.MeshBasicMaterial({ visible: false }); // Lados invisíveis
 
-            const mesh = new THREE.Mesh(geometry, [matSide, matFront, matBack]);
+            const mesh = new THREE.Mesh(geometry, [matSide, matEmoji, matEmoji]);
             mesh.rotation.x = Math.PI / 2;
             scene.add(mesh);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+            const ambient = new THREE.AmbientLight(0xffffff, 1.0);
             scene.add(ambient);
-            const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-            dir.position.set(2, 2, 5);
-            scene.add(dir);
 
             camera.position.z = 5;
 
