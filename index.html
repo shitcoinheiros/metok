@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MemeTok - IPFS Edition</title>
+    <title>MemeTok - Pure IPFS Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -113,7 +113,7 @@
 
     <div id="loadingOverlay">
         <div class="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-[10px] font-black tracking-[0.4em]">PROCESSANDO IPFS...</p>
+        <p id="loadingText" class="text-[10px] font-black tracking-[0.4em]">PROCESSANDO IPFS...</p>
     </div>
 
     <div id="feed" class="no-scrollbar">
@@ -123,8 +123,8 @@
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <nav class="fixed bottom-10 left-0 right-0 flex justify-center items-center gap-6 z-50">
-        <button class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="layout-grid" class="w-6 h-6 opacity-40"></i>
+        <button id="refreshBtn" class="w-14 h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="refresh-cw" class="w-6 h-6 opacity-40"></i>
         </button>
         
         <button id="uploadBtn" class="bg-white text-black h-14 px-12 rounded-full font-black text-[11px] tracking-[0.3em] shadow-2xl active:scale-95 transition-all">
@@ -136,20 +136,8 @@
         </button>
     </nav>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-        // Configuração Firebase
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'memetok-ipfs-html';
-
-        // Credenciais Pinata
+    <script>
+        // --- CREDENCIAIS PINATA ---
         const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIyYWEzYmZlZC05ZmFiLTRmMDYtYjAzYi1mZWZiMDI5OWQ3MDgiLCJlbWFpbCI6InNoaXRjb2luaGVpcm9zQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiI3YjRiNmQ5OGM2ZDI5MTFlM2FiMiIsInNjb3BlZEtleVNlY3JldCI6ImY0ZWYzNjY1MzY3ODdiMjRkOGM4YmFlNGJiNTU3NGZiMTMyYmQ0YzRhMzI2ODY2MDU5OTY3N2M4NzE5ZWRhZTAiLCJleHAiOjE4MDEyNzMyMzN9.lUdaLbj_IpiRheeFaUPGNmEt8nbF_5hg0LoSBQNnM1U";
         const GATEWAY = "jade-detailed-slug-469.mypinata.cloud";
 
@@ -157,48 +145,47 @@
         const feed = document.getElementById('feed');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
         const statusOverlay = document.getElementById('statusOverlay');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
 
-        // Inicializar Autenticação seguindo a REGRA 3
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                console.log("Autenticado com sucesso.");
-            } catch (err) {
-                console.error("Erro na autenticação:", err);
-            }
-        };
+        // Carregar ícones do Lucide
+        lucide.createIcons();
 
-        // Iniciar processo de Auth
-        initAuth();
-
-        // Escutar mudanças de estado de Auth antes de carregar dados
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                initFeedListener();
-            } else {
-                console.log("Aguardando autenticação...");
-            }
-        });
-
-        function initFeedListener() {
-            // REGRA 1: Caminho estrito para dados públicos
-            const memesCol = collection(db, 'artifacts', appId, 'public', 'data', 'memes');
+        // Buscar lista de arquivos diretamente da Pinata
+        async function fetchPinataFiles() {
+            loadingOverlay.style.display = 'flex';
+            loadingText.innerText = "BUSCANDO NO IPFS...";
             
-            // REGRA 2: Sem complex queries (orderBy/where múltiplos)
-            onSnapshot(memesCol, (snapshot) => {
-                const newMemes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Ordenação manual em memória para evitar necessidade de índices no Firestore
-                memes = newMemes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            try {
+                // Endpoint da Pinata que lista arquivos pinados
+                const response = await fetch("https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=20", {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` }
+                });
+
+                if (!response.ok) throw new Error("Erro ao buscar lista");
+
+                const data = await response.json();
+                
+                // Formatar dados para o feed
+                memes = data.rows.map(item => ({
+                    id: item.id,
+                    cid: item.ipfs_pin_hash,
+                    url: `https://${GATEWAY}/ipfs/${item.ipfs_pin_hash}`,
+                    timestamp: new Date(item.date_pinned).getTime(),
+                    rewards: Math.floor(Math.random() * 999) // Simulação de rewards
+                }));
+
                 renderFeed();
-            }, (err) => {
-                console.error("Erro nas permissões do Firestore. Verifique o caminho da coleção:", err);
-            });
+            } catch (err) {
+                console.error(err);
+                feed.innerHTML = `<div class="h-full flex items-center justify-center text-red-500 p-10 text-center">Erro ao carregar IPFS: ${err.message}</div>`;
+            } finally {
+                loadingOverlay.style.display = 'none';
+                loadingText.innerText = "PROCESSANDO IPFS...";
+            }
         }
 
         function createItemElement(m) {
@@ -209,14 +196,14 @@
                 <img src="${m.url}" class="meme-main" onload="this.style.opacity=1" onerror="this.src='https://gateway.pinata.cloud/ipfs/${m.cid}'">
                 <div class="overlay">
                     <div class="absolute bottom-40 left-10">
-                        <span class="bg-yellow-400 text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">IPFS CONTENT</span>
+                        <span class="bg-yellow-400 text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">IPFS STORAGE</span>
                         <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
-                        <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid || 'N/A'}</p>
+                        <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid}</p>
                     </div>
                     <div class="absolute right-8 bottom-44 flex flex-col items-center gap-10">
                         <button class="flex flex-col items-center group active:scale-125 transition-transform">
                             <i data-lucide="zap" class="w-8 h-8 opacity-40 group-active:text-yellow-400"></i>
-                            <span class="text-[10px] font-black mt-2 opacity-40">${m.rewards || 0}</span>
+                            <span class="text-[10px] font-black mt-2 opacity-40">${m.rewards}</span>
                         </button>
                         <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
                             <i data-lucide="share-2" class="w-7 h-7"></i>
@@ -231,31 +218,25 @@
             if (memes.length === 0) {
                 feed.innerHTML = `
                     <div class="h-full w-full flex flex-col items-center justify-center opacity-20">
-                        <i data-lucide="globe" class="w-20 h-20 mb-4"></i>
-                        <p class="text-[10px] font-black tracking-[0.4em]">AGUARDANDO BLOCOS...</p>
+                        <i data-lucide="image-off" class="w-20 h-20 mb-4"></i>
+                        <p class="text-[10px] font-black tracking-[0.4em]">NENHUM MEME ENCONTRADO</p>
                     </div>
                 `;
                 lucide.createIcons();
                 return;
             }
-
             feed.innerHTML = '';
             memes.forEach(m => feed.appendChild(createItemElement(m)));
             lucide.createIcons();
         }
 
-        // Upload para Pinata
-        uploadBtn.addEventListener('click', () => {
-            if (!auth.currentUser) {
-                alert("Aguarde a conexão com o servidor...");
-                return;
-            }
-            fileInput.click();
-        });
+        // Eventos
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        refreshBtn.addEventListener('click', fetchPinataFiles);
 
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file || !auth.currentUser) return;
+            if (!file) return;
 
             loadingOverlay.style.display = 'flex';
             
@@ -263,7 +244,6 @@
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('pinataMetadata', JSON.stringify({ name: `MemeTok_${Date.now()}` }));
-                formData.append('pinataOptions', JSON.stringify({ cidVersion: 0 }));
 
                 const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
                     method: 'POST',
@@ -271,31 +251,25 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Falha no upload para o Pinata");
-
-                const data = await response.json();
-                const cid = data.IpfsHash;
-
-                // Salvar no Firestore usando o caminho obrigatório
-                const memesCol = collection(db, 'artifacts', appId, 'public', 'data', 'memes');
-                await addDoc(memesCol, {
-                    url: `https://${GATEWAY}/ipfs/${cid}`,
-                    cid: cid,
-                    timestamp: Date.now(),
-                    rewards: Math.floor(Math.random() * 500),
-                    creator: auth.currentUser.uid
-                });
+                if (!response.ok) throw new Error("Falha no upload");
 
                 statusOverlay.style.display = 'block';
-                setTimeout(() => statusOverlay.style.display = 'none', 3000);
+                setTimeout(() => {
+                    statusOverlay.style.display = 'none';
+                    fetchPinataFiles(); // Atualiza a lista após upload
+                }, 2000);
+
             } catch (err) {
-                console.error("Erro completo:", err);
                 alert("Erro: " + err.message);
             } finally {
                 loadingOverlay.style.display = 'none';
                 fileInput.value = '';
             }
         });
+
+        // Iniciar carregando os arquivos existentes
+        fetchPinataFiles();
+
     </script>
 </body>
 </html>
