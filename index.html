@@ -244,7 +244,6 @@
         }
 
         function openTipModal(cid) {
-            // Simulando um endereço baseado no CID para o exemplo
             const mockAddress = `WOWN${cid.substring(0, 8)}${Math.random().toString(36).substring(7).toUpperCase()}`;
             document.getElementById('authorAddress').innerText = mockAddress;
             modalOverlay.style.display = 'flex';
@@ -314,9 +313,9 @@
                             </span>
                         </div>
 
-                        <!-- Gorjeta (Tip Button) -->
+                        <!-- Gorjeta (Tip Button com Ícone de Cifrão) -->
                         <button onclick="openTipModal('${m.cid}')" class="w-10 h-10 md:w-12 md:h-12 bg-yellow-400 text-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.3)] active:scale-90 transition-transform">
-                            <i data-lucide="coins" class="w-5 h-5 md:w-6 md:h-6"></i>
+                            <i data-lucide="dollar-sign" class="w-5 h-5 md:w-6 md:h-6"></i>
                         </button>
 
                         <!-- Share -->
