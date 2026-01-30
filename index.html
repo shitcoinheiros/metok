@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MemeTok - Pure IPFS Edition</title>
+    <title>MemeTok - Pure IPFS 3D Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
@@ -69,7 +70,7 @@
             background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 100%);
         }
         
-        .overlay button { pointer-events: auto; }
+        .overlay button, .three-container { pointer-events: auto; }
 
         .btn-glass {
             background: rgba(255, 255, 255, 0.05);
@@ -105,6 +106,8 @@
             justify-content: center;
             backdrop-filter: blur(10px);
         }
+
+        .three-container { width: 80px; height: 80px; margin-bottom: -10px; cursor: pointer; }
     </style>
 </head>
 <body class="text-white select-none">
@@ -116,9 +119,7 @@
         <p id="loadingText" class="text-[10px] font-black tracking-[0.4em]">PROCESSANDO IPFS...</p>
     </div>
 
-    <div id="feed" class="no-scrollbar">
-        <!-- Itens injetados via JS -->
-    </div>
+    <div id="feed" class="no-scrollbar"></div>
 
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
@@ -137,7 +138,6 @@
     </nav>
 
     <script>
-        // --- CREDENCIAIS PINATA ---
         const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIyYWEzYmZlZC05ZmFiLTRmMDYtYjAzYi1mZWZiMDI5OWQ3MDgiLCJlbWFpbCI6InNoaXRjb2luaGVpcm9zQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiI3YjRiNmQ5OGM2ZDI5MTFlM2FiMiIsInNjb3BlZEtleVNlY3JldCI6ImY0ZWYzNjY1MzY3ODdiMjRkOGM4YmFlNGJiNTU3NGZiMTMyYmQ0YzRhMzI2ODY2MDU5OTY3N2M4NzE5ZWRhZTAiLCJleHAiOjE4MDEyNzMyMzN9.lUdaLbj_IpiRheeFaUPGNmEt8nbF_5hg0LoSBQNnM1U";
         const GATEWAY = "jade-detailed-slug-469.mypinata.cloud";
 
@@ -150,42 +150,104 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
 
-        // Carregar ícones do Lucide
         lucide.createIcons();
 
-        // Buscar lista de arquivos diretamente da Pinata
+        // --- LÓGICA 3D ---
+        function createEmojiTexture(emoji) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(256, 256, 245, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.save();
+            ctx.translate(256, 256);
+            ctx.rotate(-Math.PI / 2); // Eixo corrigido (cabeça para cima)
+            ctx.font = '320px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 0, 0);
+            ctx.restore();
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = 16;
+            return texture;
+        }
+
+        function create3DReaction(container) {
+            const width = 80, height = 80;
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.CylinderGeometry(1.0, 1.0, 0.15, 64);
+            const texNeutral = createEmojiTexture('😐');
+            const texLaugh = createEmojiTexture('😂');
+            
+            const matFront = new THREE.MeshPhongMaterial({ map: texNeutral, shininess: 100 });
+            const matBack = new THREE.MeshPhongMaterial({ map: texNeutral, shininess: 100 });
+            const matSide = new THREE.MeshPhongMaterial({ color: 0xffffff });
+
+            const mesh = new THREE.Mesh(geometry, [matSide, matFront, matBack]);
+            mesh.rotation.x = Math.PI / 2;
+            scene.add(mesh);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+            scene.add(ambient);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+            dir.position.set(2, 2, 5);
+            scene.add(dir);
+
+            camera.position.z = 5;
+
+            let animating = false;
+            let currentScale = 1;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!animating) {
+                    mesh.rotation.y = Math.sin(Date.now() * 0.002) * 0.2;
+                    mesh.rotation.z = Math.cos(Date.now() * 0.001) * 0.1;
+                    currentScale = THREE.MathUtils.lerp(currentScale, 1.0, 0.1);
+                } else {
+                    mesh.rotation.z += 0.3;
+                    currentScale = THREE.MathUtils.lerp(currentScale, 1.6, 0.2);
+                }
+                mesh.scale.set(currentScale, currentScale, currentScale);
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            container.onclick = () => {
+                animating = true;
+                mesh.material[1].map = texLaugh;
+                mesh.material[2].map = texLaugh;
+                setTimeout(() => animating = false, 700);
+            };
+        }
+
+        // --- IPFS FETCH ---
         async function fetchPinataFiles() {
             loadingOverlay.style.display = 'flex';
             loadingText.innerText = "BUSCANDO NO IPFS...";
-            
             try {
-                // Endpoint da Pinata que lista arquivos pinados
                 const response = await fetch("https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=20", {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` }
                 });
-
-                if (!response.ok) throw new Error("Erro ao buscar lista");
-
                 const data = await response.json();
-                
-                // Formatar dados para o feed
                 memes = data.rows.map(item => ({
-                    id: item.id,
                     cid: item.ipfs_pin_hash,
                     url: `https://${GATEWAY}/ipfs/${item.ipfs_pin_hash}`,
-                    timestamp: new Date(item.date_pinned).getTime(),
-                    rewards: Math.floor(Math.random() * 999) // Simulação de rewards
+                    rewards: Math.floor(Math.random() * 999)
                 }));
-
                 renderFeed();
-            } catch (err) {
-                console.error(err);
-                feed.innerHTML = `<div class="h-full flex items-center justify-center text-red-500 p-10 text-center">Erro ao carregar IPFS: ${err.message}</div>`;
-            } finally {
-                loadingOverlay.style.display = 'none';
-                loadingText.innerText = "PROCESSANDO IPFS...";
-            }
+            } catch (err) { console.error(err); } 
+            finally { loadingOverlay.style.display = 'none'; }
         }
 
         function createItemElement(m) {
@@ -200,76 +262,56 @@
                         <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
                         <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid}</p>
                     </div>
-                    <div class="absolute right-8 bottom-44 flex flex-col items-center gap-10">
-                        <button class="flex flex-col items-center group active:scale-125 transition-transform">
-                            <i data-lucide="zap" class="w-8 h-8 opacity-40 group-active:text-yellow-400"></i>
-                            <span class="text-[10px] font-black mt-2 opacity-40">${m.rewards}</span>
-                        </button>
+                    <div class="absolute right-8 bottom-44 flex flex-col items-center gap-6">
+                        <div class="three-container"></div>
+                        <span class="text-[12px] font-black opacity-60 text-yellow-400 mt-[-15px]">${m.rewards}</span>
                         <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
                             <i data-lucide="share-2" class="w-7 h-7"></i>
                         </button>
                     </div>
                 </div>
             `;
+            const container = div.querySelector('.three-container');
+            create3DReaction(container);
             return div;
         }
 
         function renderFeed() {
-            if (memes.length === 0) {
-                feed.innerHTML = `
-                    <div class="h-full w-full flex flex-col items-center justify-center opacity-20">
-                        <i data-lucide="image-off" class="w-20 h-20 mb-4"></i>
-                        <p class="text-[10px] font-black tracking-[0.4em]">NENHUM MEME ENCONTRADO</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
             feed.innerHTML = '';
             memes.forEach(m => feed.appendChild(createItemElement(m)));
             lucide.createIcons();
         }
 
-        // Eventos
         uploadBtn.addEventListener('click', () => fileInput.click());
         refreshBtn.addEventListener('click', fetchPinataFiles);
 
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             loadingOverlay.style.display = 'flex';
-            
             try {
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('pinataMetadata', JSON.stringify({ name: `MemeTok_${Date.now()}` }));
-
                 const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` },
                     body: formData
                 });
-
                 if (!response.ok) throw new Error("Falha no upload");
-
                 statusOverlay.style.display = 'block';
                 setTimeout(() => {
                     statusOverlay.style.display = 'none';
-                    fetchPinataFiles(); // Atualiza a lista após upload
+                    fetchPinataFiles();
                 }, 2000);
-
-            } catch (err) {
-                alert("Erro: " + err.message);
-            } finally {
-                loadingOverlay.style.display = 'none';
+            } catch (err) { alert("Erro: " + err.message); } 
+            finally { 
+                loadingOverlay.style.display = 'none'; 
                 fileInput.value = '';
             }
         });
 
-        // Iniciar carregando os arquivos existentes
         fetchPinataFiles();
-
     </script>
 </body>
 </html>
