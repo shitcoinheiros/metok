@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MemeTok - Pure IPFS 3D Edition</title>
+    <title>MemeTok - Emoji Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             overflow: hidden; background: #000;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -70,12 +70,44 @@
             background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 100%);
         }
         
-        .overlay button, .three-container { pointer-events: auto; }
+        .overlay button, .reaction-container { pointer-events: auto; }
 
         .btn-glass {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* SISTEMA DE REAÇÃO EMOJI */
+        .reaction-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .emoji-icon {
+            font-size: 64px;
+            display: inline-block;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            animation: floatIdle 3s ease-in-out infinite;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes floatIdle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+
+        .emoji-icon.active {
+            animation: laughActive 0.6s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
+        }
+
+        @keyframes laughActive {
+            0%, 100% { transform: scale(1.2) rotate(-10deg); }
+            50% { transform: scale(1.4) rotate(10deg); }
         }
 
         #statusOverlay {
@@ -106,8 +138,6 @@
             justify-content: center;
             backdrop-filter: blur(10px);
         }
-
-        .three-container { width: 80px; height: 80px; margin-bottom: -10px; cursor: pointer; }
     </style>
 </head>
 <body class="text-white select-none">
@@ -142,6 +172,8 @@
         const GATEWAY = "jade-detailed-slug-469.mypinata.cloud";
 
         let memes = [];
+        const likedMemes = new Set();
+        
         const feed = document.getElementById('feed');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
@@ -152,88 +184,26 @@
 
         lucide.createIcons();
 
-        // --- LÓGICA 3D ---
-        function createEmojiTexture(emoji) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
+        function handleReactionClick(container, cid, rewardSpan) {
+            const emojiEl = container.querySelector('.emoji-icon');
             
-            // Fundo transparente (sem borda branca)
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.save();
-            ctx.translate(256, 256);
-            ctx.rotate(-Math.PI / 2); // Eixo corrigido
-            ctx.font = '400px serif'; // Aumentado um pouco para preencher o espaço
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(emoji, 0, 0);
-            ctx.restore();
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.anisotropy = 16;
-            return texture;
-        }
+            // Ativa animação de risada
+            emojiEl.innerText = '😂';
+            emojiEl.classList.add('active');
 
-        function create3DReaction(container) {
-            const width = 80, height = 80;
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-
-            // Cilindro muito fino para sustentar a textura sem parecer um disco sólido
-            const geometry = new THREE.CylinderGeometry(1.0, 1.0, 0.05, 64);
-            const texNeutral = createEmojiTexture('😐');
-            const texLaugh = createEmojiTexture('😂');
-            
-            // Material com transparência habilitada
-            const matEmoji = new THREE.MeshPhongMaterial({ 
-                map: texNeutral, 
-                transparent: true, 
-                shininess: 0 
-            });
-            const matSide = new THREE.MeshBasicMaterial({ visible: false }); // Lados invisíveis
-
-            const mesh = new THREE.Mesh(geometry, [matSide, matEmoji, matEmoji]);
-            mesh.rotation.x = Math.PI / 2;
-            scene.add(mesh);
-
-            const ambient = new THREE.AmbientLight(0xffffff, 1.0);
-            scene.add(ambient);
-
-            camera.position.z = 5;
-
-            let animating = false;
-            let currentScale = 1;
-
-            function animate() {
-                requestAnimationFrame(animate);
-                if (!animating) {
-                    mesh.rotation.y = Math.sin(Date.now() * 0.002) * 0.2;
-                    mesh.rotation.z = Math.cos(Date.now() * 0.001) * 0.1;
-                    currentScale = THREE.MathUtils.lerp(currentScale, 1.0, 0.1);
-                } else {
-                    mesh.rotation.z += 0.3;
-                    currentScale = THREE.MathUtils.lerp(currentScale, 1.6, 0.2);
-                }
-                mesh.scale.set(currentScale, currentScale, currentScale);
-                renderer.render(scene, camera);
+            if (!likedMemes.has(cid)) {
+                likedMemes.add(cid);
+                const current = parseInt(rewardSpan.innerText);
+                rewardSpan.innerText = current + 1;
+                rewardSpan.classList.add('opacity-100', 'text-yellow-400');
+                rewardSpan.classList.remove('opacity-60');
             }
-            animate();
 
-            container.onclick = () => {
-                animating = true;
-                mesh.material[1].map = texLaugh;
-                mesh.material[2].map = texLaugh;
-                setTimeout(() => animating = false, 700);
-            };
+            // Feedback tátil visual
+            container.style.transform = 'scale(1.2)';
+            setTimeout(() => container.style.transform = 'scale(1)', 200);
         }
 
-        // --- IPFS FETCH ---
         async function fetchPinataFiles() {
             loadingOverlay.style.display = 'flex';
             loadingText.innerText = "BUSCANDO NO IPFS...";
@@ -254,6 +224,7 @@
         }
 
         function createItemElement(m) {
+            const isLiked = likedMemes.has(m.cid);
             const div = document.createElement('div');
             div.className = 'snap-item';
             div.innerHTML = `
@@ -263,19 +234,26 @@
                     <div class="absolute bottom-40 left-10">
                         <span class="bg-yellow-400 text-black px-2 py-0.5 text-[9px] font-black tracking-tighter uppercase mb-3 inline-block italic">IPFS STORAGE</span>
                         <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
-                        <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid}</p>
+                        <p class="text-[8px] font-mono opacity-30 mt-2 truncate w-40">CID: ${m.cid.substring(0,20)}...</p>
                     </div>
-                    <div class="absolute right-8 bottom-44 flex flex-col items-center gap-6">
-                        <div class="three-container"></div>
-                        <span class="text-[12px] font-black opacity-60 text-yellow-400 mt-[-15px]">${m.rewards}</span>
-                        <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
+                    <div class="absolute right-8 bottom-44 flex flex-col items-center gap-4">
+                        <div class="reaction-container" id="react-${m.cid}">
+                            <span class="emoji-icon ${isLiked ? 'active' : ''}">${isLiked ? '😂' : '😐'}</span>
+                            <span class="reward-count text-[12px] font-black ${isLiked ? 'opacity-100 text-yellow-400' : 'opacity-60'} mt-[-5px] tabular-nums italic transition-all">
+                                ${isLiked ? m.rewards + 1 : m.rewards}
+                            </span>
+                        </div>
+                        <button class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform mt-4">
                             <i data-lucide="share-2" class="w-7 h-7"></i>
                         </button>
                     </div>
                 </div>
             `;
-            const container = div.querySelector('.three-container');
-            create3DReaction(container);
+            
+            const container = div.querySelector('.reaction-container');
+            const rewardSpan = div.querySelector('.reward-count');
+            container.onclick = () => handleReactionClick(container, m.cid, rewardSpan);
+
             return div;
         }
 
@@ -292,6 +270,7 @@
             const file = e.target.files[0];
             if (!file) return;
             loadingOverlay.style.display = 'flex';
+            loadingText.innerText = "SUBINDO PARA O IPFS...";
             try {
                 const formData = new FormData();
                 formData.append('file', file);
