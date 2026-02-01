@@ -102,7 +102,7 @@
             width: 100%;
         }
         
-        .overlay button, .reaction-container, .tip-container { pointer-events: auto; }
+        .overlay button, .info-container { pointer-events: auto; }
 
         .btn-glass {
             background: rgba(255, 0, 255, 0.1);
@@ -111,40 +111,36 @@
             box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
         }
 
-        .reaction-container {
+        .info-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             user-select: none;
-        }
-
-        .emoji-icon {
-            font-size: 34px; 
-            display: inline-block;
-            filter: drop-shadow(0 0 8px var(--neon-pink));
-            animation: floatIdle 3s ease-in-out infinite;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        .info-icon-wrapper {
+            width: 44px;
+            height: 44px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--neon-blue);
+            color: black;
+            animation: pulseBlue 2s infinite;
+        }
+
+        @keyframes pulseBlue {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 15px var(--neon-blue); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-blue); }
+        }
+
         @media (min-width: 768px) {
-            .emoji-icon { font-size: 42px; }
+            .info-icon-wrapper { width: 52px; height: 52px; }
             .meme-main { max-height: 80vh; transform: translateY(-10%); }
-        }
-
-        @keyframes floatIdle {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(3deg); }
-        }
-
-        .emoji-icon.active {
-            animation: laughActive 0.6s ease-in-out infinite;
-            filter: drop-shadow(0 0 15px var(--neon-blue));
-        }
-
-        @keyframes laughActive {
-            0%, 100% { transform: scale(1.15) rotate(-8deg); }
-            50% { transform: scale(1.3) rotate(8deg); }
         }
 
         #statusOverlay {
@@ -165,7 +161,7 @@
             text-transform: uppercase;
         }
 
-        #loadingOverlay, #modalOverlay {
+        #loadingOverlay, #modalOverlay, #infoModal {
             position: fixed;
             inset: 0;
             background: rgba(18, 0, 22, 0.9);
@@ -177,7 +173,7 @@
             backdrop-filter: blur(15px);
         }
 
-        #modalOverlay {
+        #modalOverlay, #infoModal {
             z-index: 300;
             padding: 20px;
         }
@@ -196,7 +192,6 @@
             text-shadow: 0 0 5px white;
         }
 
-        /* Estilo para o novo botão de imagem da carteira com animação */
         .wallet-img-btn {
             width: 44px;
             height: 44px;
@@ -204,27 +199,11 @@
             object-fit: cover;
             border: 2px solid var(--neon-pink);
             box-shadow: 0 0 15px var(--neon-pink);
-            animation: walletPulse 3s ease-in-out infinite;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes walletPulse {
-            0%, 100% { 
-                transform: translateY(0) scale(1);
-                box-shadow: 0 0 15px var(--neon-pink);
-            }
-            50% { 
-                transform: translateY(-5px) scale(1.1);
-                box-shadow: 0 0 25px var(--neon-pink), 0 0 10px var(--neon-blue);
-            }
         }
 
         .wallet-img-btn:active {
             transform: scale(0.9) rotate(15deg);
-        }
-
-        @media (min-width: 768px) {
-            .wallet-img-btn { width: 52px; height: 52px; }
         }
     </style>
 </head>
@@ -232,6 +211,42 @@
 
     <div id="statusOverlay">SYSTEM_UPDATE: SUCCESS 🚀</div>
 
+    <!-- Modal de Informações -->
+    <div id="infoModal" onclick="closeInfoModal()">
+        <div class="bg-zinc-950 border-2 border-cyan-500 p-6 rounded-lg w-full max-w-sm text-left space-y-4 shadow-[0_0_50px_rgba(0,242,255,0.3)]" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start border-b border-cyan-900 pb-3">
+                <div>
+                    <h3 id="infoTitle" class="text-xl font-black italic uppercase text-cyan-400">ARTIFACT_DATA</h3>
+                    <p class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">Status: Decrypted</p>
+                </div>
+                <button onclick="closeInfoModal()" class="text-zinc-500 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="space-y-1">
+                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Neural ID (CID)</span>
+                    <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-black/40 p-2 border border-zinc-800"></p>
+                </div>
+                
+                <div class="space-y-1">
+                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Technical Specifications</span>
+                    <p class="text-[10px] text-zinc-400 leading-relaxed italic">
+                        Este artefato visual é uma representação simbólica codificada na rede IPFS. 
+                        Metadados indicam uma origem de nível <span class="text-cyan-400">Class-S</span> 
+                        com integridade criptográfica de 99.9%.
+                    </p>
+                </div>
+            </div>
+
+            <button onclick="closeInfoModal()" class="w-full py-3 bg-cyan-500 text-black font-black text-[10px] tracking-[0.2em] uppercase active:scale-95 transition-all">
+                Close_Transmission
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Wallet -->
     <div id="modalOverlay" onclick="closeModal()">
         <div class="bg-zinc-950 border-2 border-fuchsia-600 p-8 rounded-lg w-full max-w-sm text-center space-y-6 shadow-[0_0_50px_rgba(255,0,255,0.4)]" onclick="event.stopPropagation()">
             <div class="w-16 h-16 bg-fuchsia-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-fuchsia-500 overflow-hidden">
@@ -279,15 +294,7 @@
         const WALLET_IMG = "https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=" + TOKEN;
 
         const TITLES = [
-            "Court Jester",
-            "Commoner",
-            "Soldier",
-            "Mercenary",
-            "Farmer",
-            "Knight",
-            "Baron",
-            "Lord",
-            "King"
+            "Court Jester", "Commoner", "Soldier", "Mercenary", "Farmer", "Knight", "Baron", "Lord", "King"
         ];
 
         const STATIC_IMAGES = [
@@ -296,40 +303,31 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreihhfml7xnqlbpbu2igxju62lqn3rp4yfqpus5ltrinf3t6j5nnamu?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreih44u5662jytegch5rqftwqhhnchqb5bojzpme2foixpw5doheflm?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreibd647tf3fueia3sv24me3h67tuvzusqmhyzobcv7wadhj555te4a?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlkhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreigzcn52vafn7bugsaaq5zf7ovdf7hsyvyo5e4hrtusxjhma3mv5xu?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiha6da4u7mzxfacizxdlcuyt6jmdn3jz3yrlnxcoadny6zhojknke?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
         ];
 
         let memes = [];
-        const likedMemes = new Set();
-        
         const feed = document.getElementById('feed');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
         const refreshBtn = document.getElementById('refreshBtn');
-        const statusOverlay = document.getElementById('statusOverlay');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const modalOverlay = document.getElementById('modalOverlay');
+        const infoModal = document.getElementById('infoModal');
 
         lucide.createIcons();
 
-        function handleReactionClick(container, cid, rewardSpan) {
-            const emojiEl = container.querySelector('.emoji-icon');
-            emojiEl.innerText = '😂';
-            emojiEl.classList.add('active');
-
-            if (!likedMemes.has(cid)) {
-                likedMemes.add(cid);
-                const current = parseInt(rewardSpan.innerText);
-                rewardSpan.innerText = current + 1;
-                rewardSpan.classList.add('opacity-100', 'text-cyan-400');
-                rewardSpan.classList.remove('opacity-60');
-            }
-            container.style.transform = 'scale(1.15) skewX(-5deg)';
-            setTimeout(() => container.style.transform = 'scale(1) skewX(0deg)', 200);
+        function openInfoModal(title, cid) {
+            document.getElementById('infoTitle').innerText = title.toUpperCase();
+            document.getElementById('infoCid').innerText = cid;
+            infoModal.style.display = 'flex';
+            lucide.createIcons();
         }
+
+        function closeInfoModal() { infoModal.style.display = 'none'; }
 
         function openTipModal(cid) {
             const mockAddress = `CYBR-${cid.substring(0, 4).toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
@@ -347,13 +345,10 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            showStatus("DATALINK_COPIED!");
-        }
-
-        function showStatus(msg) {
-            statusOverlay.innerText = msg;
-            statusOverlay.style.display = 'block';
-            setTimeout(() => statusOverlay.style.display = 'none', 2000);
+            const status = document.getElementById('statusOverlay');
+            status.innerText = "DATALINK_COPIED!";
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 2000);
         }
 
         function loadStaticMemes() {
@@ -361,21 +356,13 @@
             memes = STATIC_IMAGES.map((url, index) => {
                 const cidMatch = url.match(/\/ipfs\/([^?]+)/);
                 const displayCid = cidMatch ? cidMatch[1] : `DATA-${index}`;
-                const workTitle = TITLES[index] || "Unknown Entity";
-                return { 
-                    cid: displayCid, 
-                    url: url, 
-                    rewards: Math.floor(Math.random() * 800) + 200,
-                    title: workTitle
-                };
+                return { cid: displayCid, url: url, title: TITLES[index] || "Unknown Entity" };
             });
-
             renderFeed();
-            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 1200);
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 1000);
         }
 
         function createItemElement(m) {
-            const isLiked = likedMemes.has(m.cid);
             const div = document.createElement('div');
             div.className = 'snap-item';
             div.innerHTML = `
@@ -385,18 +372,17 @@
                     <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
                         <span class="bg-fuchsia-600 text-white px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-widest uppercase mb-2 md:mb-3 inline-block italic shadow-[0_0_10px_#ff00ff]">NEURAL_STORAGE</span>
                         <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85] cyber-text-gradient">${m.title}</h2>
-                        <p class="text-[7px] md:text-[8px] font-mono text-cyan-400/50 mt-2 truncate w-32 md:w-40 tracking-widest">CID::${m.cid.substring(0,12)}</p>
+                        <p class="text-[7px] md:text-[8px] font-mono text-cyan-400/50 mt-2 truncate w-32 md:w-40 tracking-widest">DECRYPTING_SIGNAL...</p>
                     </div>
                     
                     <div class="absolute right-5 md:right-8 bottom-36 md:bottom-44 flex flex-col items-center gap-6 md:gap-5">
-                        <div class="reaction-container" id="react-${m.cid}">
-                            <span class="emoji-icon ${isLiked ? 'active' : ''}">${isLiked ? '😂' : '😐'}</span>
-                            <span class="reward-count text-[10px] md:text-[11px] font-black ${isLiked ? 'opacity-100 text-cyan-400' : 'opacity-60'} mt-[-2px] tabular-nums italic transition-all">
-                                ${isLiked ? m.rewards + 1 : m.rewards}
-                            </span>
+                        <div class="info-container" onclick="openInfoModal('${m.title}', '${m.cid}')">
+                            <div class="info-icon-wrapper">
+                                <i data-lucide="info" class="w-6 h-6 md:w-7 md:h-7"></i>
+                            </div>
+                            <span class="text-[9px] font-black text-cyan-400 mt-2 uppercase italic">Info</span>
                         </div>
-                        <!-- Botão com a imagem da carteira animado -->
-                        <button onclick="openTipModal('${m.cid}')" class="active:scale-90 transition-transform">
+                        <button onclick="openTipModal('${m.cid}')" class="active:scale-90 transition-transform mt-2">
                             <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Wallet">
                         </button>
                         <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-sm flex items-center justify-center active:scale-90 transition-transform">
@@ -405,11 +391,6 @@
                     </div>
                 </div>
             `;
-            
-            const container = div.querySelector('.reaction-container');
-            const rewardSpan = div.querySelector('.reward-count');
-            container.onclick = () => handleReactionClick(container, m.cid, rewardSpan);
-
             return div;
         }
 
@@ -421,29 +402,6 @@
 
         uploadBtn.addEventListener('click', () => fileInput.click());
         refreshBtn.addEventListener('click', loadStaticMemes);
-
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            loadingOverlay.style.display = 'flex';
-            document.getElementById('loadingText').innerText = "UPLOADING_TO_GRID...";
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` },
-                    body: formData
-                });
-                if (!response.ok) throw new Error("Connection Refused");
-                showStatus("DATA_UPLOAD_COMPLETE! 🌐");
-            } catch (err) { console.error(err); } 
-            finally { 
-                loadingOverlay.style.display = 'none'; 
-                fileInput.value = '';
-                document.getElementById('loadingText').innerText = "WAITING_FOR_UPLINK...";
-            }
-        });
 
         window.onload = loadStaticMemes;
     </script>
