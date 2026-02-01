@@ -10,13 +10,12 @@
         :root {
             --neon-pink: #ff00ff;
             --neon-blue: #00f2ff;
-            --cyber-dark: #120016;
+            --cyber-dark: #0a000d;a
         }
 
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow-x: hidden;
-            overflow-y: hidden;
+            overflow: hidden;
             background: var(--cyber-dark);
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             position: fixed;
@@ -29,25 +28,21 @@
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 255, 0, 0.06));
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(255, 0, 255, 0.02), rgba(255, 0, 0, 0.06));
             z-index: 100;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         #feed {
             scroll-snap-type: y mandatory;
             overflow-y: scroll;
-            overflow-x: hidden;
             height: 100vh;
             width: 100vw;
             scroll-behavior: auto;
             -webkit-overflow-scrolling: touch;
-            position: relative;
-            touch-action: pan-y;
         }
 
         .snap-item {
@@ -59,9 +54,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at center, #2e003e 0%, var(--cyber-dark) 100%);
             flex-shrink: 0;
-            overflow: hidden;
         }
 
         .meme-bg-blur {
@@ -70,26 +63,123 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: blur(60px) brightness(0.4) saturate(2);
-            transform: scale(1.4);
+            filter: blur(60px) brightness(0.3);
+            transform: scale(1.2);
             z-index: 0;
-            pointer-events: none;
-            opacity: 0.6;
         }
 
         .meme-main {
             position: relative;
             z-index: 10;
             max-height: 70vh;
-            max-width: 95%;
+            max-width: 90%;
             object-fit: contain;
-            border-radius: 4px;
-            box-shadow: 0 0 30px var(--neon-pink), 0 0 10px var(--neon-blue);
-            border: 1px solid rgba(255, 0, 255, 0.3);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            transform: translateY(-12%);
-            pointer-events: auto;
+            border-radius: 2px;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.2);
+            border: 1px solid rgba(255, 0, 255, 0.1);
+            transform: translateY(-10%);
+        }
+
+        /* ANIMAÇÕES: Monitor Ligar/Desligar */
+        @keyframes monitorPowerOn {
+            0% { 
+                transform: scaleY(0.002) scaleX(0); 
+                opacity: 0;
+                filter: brightness(5) drop-shadow(0 0 10px var(--neon-pink));
+            }
+            40% { 
+                transform: scaleY(0.002) scaleX(1); 
+                opacity: 1;
+                filter: brightness(2) drop-shadow(0 0 5px var(--neon-pink));
+            }
+            100% { 
+                transform: scaleY(1) scaleX(1); 
+                opacity: 1;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes monitorPowerOff {
+            0% { 
+                transform: scaleY(1) scaleX(1); 
+                opacity: 1;
+                filter: brightness(1);
+            }
+            60% { 
+                transform: scaleY(0.002) scaleX(1); 
+                opacity: 1;
+                filter: brightness(2) drop-shadow(0 0 5px var(--neon-pink));
+            }
+            100% { 
+                transform: scaleY(0.002) scaleX(0); 
+                opacity: 0;
+                filter: brightness(5) drop-shadow(0 0 10px var(--neon-pink));
+            }
+        }
+
+        .modal-base {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 0, 13, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .cyber-panel {
+            width: 90%;
+            max-width: 400px;
+            background: #120016;
+            border: 1px solid var(--neon-pink);
+            position: relative;
+            overflow: hidden;
+            transform-origin: center;
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.2), inset 0 0 30px rgba(255, 0, 255, 0.05);
+        }
+
+        /* Classes de estado de animação */
+        .panel-open {
+            animation: monitorPowerOn 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        .panel-close {
+            animation: monitorPowerOff 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        /* Barras de Expansão */
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: var(--neon-pink);
+            z-index: 10;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 2px;
+            background: var(--neon-pink);
+            z-index: 10;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .scan-line-anim {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 0, 255, 0.4);
+            position: absolute;
+            top: 0;
+            animation: scanMove 2.5s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes scanMove {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
 
         .overlay {
@@ -97,178 +187,119 @@
             inset: 0;
             pointer-events: none;
             z-index: 20;
-            background: linear-gradient(0deg, rgba(18,0,22,0.9) 0%, transparent 40%, transparent 100%);
-            padding-bottom: env(safe-area-inset-bottom);
-            width: 100%;
+            background: linear-gradient(0deg, rgba(10,0,13,0.85) 0%, transparent 40%);
         }
         
-        .overlay button, .info-container { pointer-events: auto; }
-
-        .btn-glass {
-            background: rgba(255, 0, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--neon-pink);
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
-        }
-
-        .info-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .interactive { pointer-events: auto; }
 
         .info-icon-wrapper {
             width: 44px;
             height: 44px;
-            background: var(--neon-blue);
+            background: var(--neon-pink);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px var(--neon-blue);
-            color: black;
-            animation: pulseBlue 2s infinite;
+            box-shadow: 0 0 20px var(--neon-pink);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        @keyframes pulseBlue {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 15px var(--neon-blue); }
-            50% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-blue); }
-        }
-
-        @media (min-width: 768px) {
-            .info-icon-wrapper { width: 52px; height: 52px; }
-            .meme-main { max-height: 80vh; transform: translateY(-10%); }
-        }
-
-        #statusOverlay {
-            position: fixed;
-            top: env(safe-area-inset-top, 20px);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: var(--neon-blue);
-            color: black;
-            padding: 10px 20px;
-            border-radius: 2px;
-            font-weight: 900;
-            font-size: 10px;
-            display: none;
-            box-shadow: 0 0 20px var(--neon-blue);
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-        }
-
-        #loadingOverlay, #modalOverlay, #infoModal {
-            position: fixed;
-            inset: 0;
-            background: rgba(18, 0, 22, 0.9);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(15px);
-        }
-
-        #modalOverlay, #infoModal {
-            z-index: 300;
-            padding: 20px;
-        }
+        .info-icon-wrapper:active { transform: scale(0.9); }
 
         .cyber-text-gradient {
-            background: linear-gradient(to bottom, #fff, var(--neon-pink));
+            background: linear-gradient(to right, #fff, var(--neon-pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
-        }
-
-        .cyber-button-main {
-            background: var(--neon-pink);
-            color: white;
-            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 10px rgba(255,255,255,0.5);
-            text-shadow: 0 0 5px white;
         }
 
         .wallet-img-btn {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            object-fit: cover;
             border: 2px solid var(--neon-pink);
             box-shadow: 0 0 15px var(--neon-pink);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .wallet-img-btn:active {
-            transform: scale(0.9) rotate(15deg);
+        .copy-feedback {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body class="text-white select-none">
 
-    <div id="statusOverlay">SYSTEM_UPDATE: SUCCESS 🚀</div>
-
-    <!-- Modal de Informações -->
-    <div id="infoModal" onclick="closeInfoModal()">
-        <div class="bg-zinc-950 border-2 border-cyan-500 p-6 rounded-lg w-full max-w-sm text-left space-y-4 shadow-[0_0_50px_rgba(0,242,255,0.3)]" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-start border-b border-cyan-900 pb-3">
+    <!-- Painel de Informações Militares -->
+    <div id="infoModal" class="modal-base" onclick="closeInfoModal()">
+        <div id="infoPanel" class="cyber-panel p-6 space-y-4" onclick="event.stopPropagation()">
+            <div class="scan-line-anim"></div>
+            
+            <div class="flex justify-between items-start border-b border-fuchsia-900/50 pb-2">
                 <div>
-                    <h3 id="infoTitle" class="text-xl font-black italic uppercase text-cyan-400">ARTIFACT_DATA</h3>
-                    <p class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">Status: Decrypted</p>
+                    <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500">REGISTO_CLASSIFICADO</h3>
+                    <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.3em]">Ligação Neural: Ativa</p>
                 </div>
-                <button onclick="closeInfoModal()" class="text-zinc-500 hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="text-[8px] font-mono text-fuchsia-600">ID: PNK-777</div>
             </div>
             
-            <div class="space-y-3">
+            <div class="space-y-4 py-2">
                 <div class="space-y-1">
-                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Neural ID (CID)</span>
-                    <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-black/40 p-2 border border-zinc-800"></p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-1 h-1 bg-fuchsia-500"></div>
+                        <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Endereço de Protocolo (CID)</span>
+                    </div>
+                    <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-fuchsia-950/20 p-2 border-l-2 border-fuchsia-600"></p>
                 </div>
                 
                 <div class="space-y-1">
-                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Technical Specifications</span>
-                    <p class="text-[10px] text-zinc-400 leading-relaxed italic">
-                        Este artefato visual é uma representação simbólica codificada na rede IPFS. 
-                        Metadados indicam uma origem de nível <span class="text-cyan-400">Class-S</span> 
-                        com integridade criptográfica de 99.9%.
+                    <div class="flex items-center gap-2">
+                        <div class="w-1 h-1 bg-fuchsia-500"></div>
+                        <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Protocolo de Instrução</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-300 leading-relaxed font-light italic">
+                        AVISO: Esta transmissão contém dados sensíveis. 
+                        Metadados extraídos sugerem uma codificação de nível <span class="text-fuchsia-500 font-bold">PINK-OPERATIVE</span>.
                     </p>
                 </div>
             </div>
 
-            <button onclick="closeInfoModal()" class="w-full py-3 bg-cyan-500 text-black font-black text-[10px] tracking-[0.2em] uppercase active:scale-95 transition-all">
-                Close_Transmission
+            <button onclick="closeInfoModal()" class="w-full py-2 bg-fuchsia-950/40 border border-fuchsia-600/50 text-fuchsia-400 font-black text-[9px] tracking-widest uppercase hover:bg-fuchsia-600 hover:text-white transition-all">
+                Confirmar Recebimento
             </button>
         </div>
     </div>
 
-    <!-- Modal de Wallet -->
-    <div id="modalOverlay" onclick="closeModal()">
-        <div class="bg-zinc-950 border-2 border-fuchsia-600 p-8 rounded-lg w-full max-w-sm text-center space-y-6 shadow-[0_0_50px_rgba(255,0,255,0.4)]" onclick="event.stopPropagation()">
-            <div class="w-16 h-16 bg-fuchsia-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-fuchsia-500 overflow-hidden">
-                <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" alt="Wallet" class="w-full h-full object-cover">
-            </div>
-            <h3 class="text-2xl font-black italic tracking-tighter uppercase cyber-text-gradient">Transferir Créditos</h3>
-            <p class="text-zinc-400 text-[10px] leading-relaxed uppercase tracking-wider">Apoie o criador deste artefato digital via Protocolo WOWNERO:</p>
+    <!-- Modal de Carteira (Gorjetas) -->
+    <div id="modalOverlay" class="modal-base" onclick="closeModal()">
+        <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
+            <div class="scan-line-anim"></div>
             
-            <div class="bg-fuchsia-950/30 p-4 rounded border border-fuchsia-500/50 relative group cursor-pointer active:scale-95 transition-all" onclick="copyAddress()">
-                <p id="authorAddress" class="font-mono text-[10px] text-cyan-400 break-all leading-relaxed">4Ad6n9j...CYBER_ADDR_7721</p>
-                <div class="mt-2 text-[8px] font-bold text-fuchsia-400 uppercase tracking-[0.3em]">Copy_Address</div>
+            <div class="flex flex-col items-center space-y-2">
+                <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500 p-1 shadow-[0_0_15px_rgba(255,0,255,0.5)]">
+                <h3 class="text-xl font-black italic uppercase tracking-tighter text-fuchsia-500">TRANSFERIR_CRÉDITOS</h3>
+                <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.2em]">Destinatário Identificado</p>
             </div>
 
-            <button onclick="closeModal()" class="w-full py-4 rounded-sm bg-white text-black font-black text-[10px] tracking-[0.2em] uppercase active:scale-95 transition-all border-b-4 border-fuchsia-500">
-                Abortar
+            <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50 cursor-pointer group relative" onclick="copyAddress()">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Endereço da Wallet</span>
+                    <div id="copyIconContainer">
+                        <i id="copyIcon" data-lucide="copy" class="w-4 h-4 text-fuchsia-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                </div>
+                <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all text-left pr-4"></p>
+            </div>
+
+            <button onclick="closeModal()" class="w-full py-3 bg-fuchsia-950/20 border border-fuchsia-900/40 text-fuchsia-700 font-black text-[9px] tracking-widest uppercase hover:border-fuchsia-600 hover:text-fuchsia-500 transition-all">
+                Abortar Operação
             </button>
         </div>
-    </div>
-
-    <div id="loadingOverlay">
-        <div class="w-12 h-12 border-2 border-cyan-400 border-t-fuchsia-500 rounded-full animate-spin mb-4 shadow-[0_0_15px_#00f2ff]"></div>
-        <p id="loadingText" class="text-[9px] font-black tracking-[0.4em] text-cyan-400 text-center px-4">INITIALIZING_NEURAL_LINK...</p>
     </div>
 
     <div id="feed" class="no-scrollbar"></div>
@@ -276,16 +307,14 @@
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <nav class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-4 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black to-transparent">
-        <button id="refreshBtn" class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-sm flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="refresh-cw" class="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400"></i>
+        <button id="refreshBtn" class="w-12 h-12 bg-zinc-950/80 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
-        
-        <button id="uploadBtn" class="cyber-button-main h-12 md:h-14 px-8 md:px-12 rounded-sm font-black text-[10px] md:text-[11px] tracking-[0.3em] active:scale-95 transition-all uppercase">
-            UPLOAD_TO_IPFS
+        <button id="uploadBtn" class="bg-fuchsia-600 h-12 px-8 font-black text-[10px] tracking-widest text-white uppercase interactive shadow-[0_0_20px_#ff00ff]">
+            ENVIAR_DADOS
         </button>
-
-        <button class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-sm flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="glitch" class="w-5 h-5 md:w-6 md:h-6 text-cyan-400"></i>
+        <button class="w-12 h-12 bg-zinc-950/80 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
+            <i data-lucide="shield-check" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
     </nav>
 
@@ -294,7 +323,7 @@
         const WALLET_IMG = "https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=" + TOKEN;
 
         const TITLES = [
-            "Court Jester", "Commoner", "Soldier", "Mercenary", "Farmer", "Knight", "Baron", "Lord", "King"
+            "Bobo da Corte", "Plebeu", "Soldado", "Mercenário", "Agricultor", "Cavaleiro", "Barão", "Lorde", "Rei"
         ];
 
         const STATIC_IMAGES = [
@@ -309,33 +338,58 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
         ];
 
-        let memes = [];
         const feed = document.getElementById('feed');
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const modalOverlay = document.getElementById('modalOverlay');
         const infoModal = document.getElementById('infoModal');
-
-        lucide.createIcons();
+        const infoPanel = document.getElementById('infoPanel');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const walletPanel = document.getElementById('walletPanel');
 
         function openInfoModal(title, cid) {
-            document.getElementById('infoTitle').innerText = title.toUpperCase();
+            document.getElementById('infoTitle').innerText = title.toUpperCase() + "_DADOS";
             document.getElementById('infoCid').innerText = cid;
             infoModal.style.display = 'flex';
-            lucide.createIcons();
+            infoPanel.classList.remove('panel-close');
+            infoPanel.classList.add('panel-open');
         }
 
-        function closeInfoModal() { infoModal.style.display = 'none'; }
+        function closeInfoModal() {
+            infoPanel.classList.remove('panel-open');
+            infoPanel.classList.add('panel-close');
+            // Aguarda o fim da animação antes de esconder o overlay
+            setTimeout(() => {
+                if(infoPanel.classList.contains('panel-close')) {
+                    infoModal.style.display = 'none';
+                }
+            }, 300);
+        }
 
         function openTipModal(cid) {
-            const mockAddress = `CYBR-${cid.substring(0, 4).toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+            const mockAddress = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
             document.getElementById('authorAddress').innerText = mockAddress;
             modalOverlay.style.display = 'flex';
+            walletPanel.classList.remove('panel-close');
+            walletPanel.classList.add('panel-open');
         }
 
-        function closeModal() { modalOverlay.style.display = 'none'; }
+        function closeModal() { 
+            walletPanel.classList.remove('panel-open');
+            walletPanel.classList.add('panel-close');
+            resetCopyIcon();
+            
+            setTimeout(() => {
+                if(walletPanel.classList.contains('panel-close')) {
+                    modalOverlay.style.display = 'none';
+                }
+            }, 300);
+        }
+
+        function resetCopyIcon() {
+            const icon = document.getElementById('copyIcon');
+            icon.setAttribute('data-lucide', 'copy');
+            icon.classList.remove('text-green-500', 'copy-feedback');
+            icon.classList.add('text-fuchsia-500');
+            lucide.createIcons();
+        }
 
         function copyAddress() {
             const text = document.getElementById('authorAddress').innerText;
@@ -345,65 +399,50 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            const status = document.getElementById('statusOverlay');
-            status.innerText = "DATALINK_COPIED!";
-            status.style.display = 'block';
-            setTimeout(() => status.style.display = 'none', 2000);
+
+            const icon = document.getElementById('copyIcon');
+            icon.setAttribute('data-lucide', 'check');
+            icon.classList.remove('text-fuchsia-500');
+            icon.classList.add('text-green-500', 'copy-feedback');
+            lucide.createIcons();
+
+            setTimeout(resetCopyIcon, 2000);
         }
 
-        function loadStaticMemes() {
-            loadingOverlay.style.display = 'flex';
-            memes = STATIC_IMAGES.map((url, index) => {
-                const cidMatch = url.match(/\/ipfs\/([^?]+)/);
-                const displayCid = cidMatch ? cidMatch[1] : `DATA-${index}`;
-                return { cid: displayCid, url: url, title: TITLES[index] || "Unknown Entity" };
-            });
-            renderFeed();
-            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 1000);
-        }
-
-        function createItemElement(m) {
-            const div = document.createElement('div');
-            div.className = 'snap-item';
-            div.innerHTML = `
-                <img src="${m.url}" class="meme-bg-blur">
-                <img src="${m.url}" class="meme-main" onload="this.style.opacity=1">
-                <div class="overlay">
-                    <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
-                        <span class="bg-fuchsia-600 text-white px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-widest uppercase mb-2 md:mb-3 inline-block italic shadow-[0_0_10px_#ff00ff]">NEURAL_STORAGE</span>
-                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85] cyber-text-gradient">${m.title}</h2>
-                        <p class="text-[7px] md:text-[8px] font-mono text-cyan-400/50 mt-2 truncate w-32 md:w-40 tracking-widest">DECRYPTING_SIGNAL...</p>
-                    </div>
-                    
-                    <div class="absolute right-5 md:right-8 bottom-36 md:bottom-44 flex flex-col items-center gap-6 md:gap-5">
-                        <div class="info-container" onclick="openInfoModal('${m.title}', '${m.cid}')">
-                            <div class="info-icon-wrapper">
-                                <i data-lucide="info" class="w-6 h-6 md:w-7 md:h-7"></i>
-                            </div>
-                            <span class="text-[9px] font-black text-cyan-400 mt-2 uppercase italic">Info</span>
-                        </div>
-                        <button onclick="openTipModal('${m.cid}')" class="active:scale-90 transition-transform mt-2">
-                            <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Wallet">
-                        </button>
-                        <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-sm flex items-center justify-center active:scale-90 transition-transform">
-                            <i data-lucide="share" class="w-4 h-4 md:w-5 md:h-5"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            return div;
-        }
-
-        function renderFeed() {
+        function loadMemes() {
             feed.innerHTML = '';
-            memes.forEach(m => feed.appendChild(createItemElement(m)));
+            STATIC_IMAGES.forEach((url, i) => {
+                const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-001";
+                const item = document.createElement('div');
+                item.className = 'snap-item';
+                item.innerHTML = `
+                    <img src="${url}" class="meme-bg-blur">
+                    <img src="${url}" class="meme-main">
+                    <div class="overlay">
+                        <div class="absolute bottom-32 left-6">
+                            <span class="text-[8px] font-black tracking-widest text-fuchsia-500 bg-fuchsia-900/30 px-2 py-1 mb-2 inline-block uppercase">Feed_Seguro</span>
+                            <h2 class="text-3xl font-black italic uppercase cyber-text-gradient">${TITLES[i]}</h2>
+                        </div>
+                        <div class="absolute right-6 bottom-36 flex flex-col gap-6 items-center">
+                            <div class="info-icon-wrapper interactive" onclick="openInfoModal('${TITLES[i]}', '${cid}')">
+                                <i data-lucide="file-text" class="w-6 h-6"></i>
+                            </div>
+                            <button onclick="openTipModal('${cid}')" class="interactive">
+                                <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
+                            </button>
+                            <button class="w-10 h-10 bg-white text-black flex items-center justify-center interactive">
+                                <i data-lucide="share-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(item);
+            });
             lucide.createIcons();
         }
 
-        uploadBtn.addEventListener('click', () => fileInput.click());
-        refreshBtn.addEventListener('click', loadStaticMemes);
-
-        window.onload = loadStaticMemes;
+        window.onload = loadMemes;
+        document.getElementById('refreshBtn').onclick = loadMemes;
     </script>
 </body>
 </html>
