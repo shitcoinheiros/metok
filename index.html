@@ -196,7 +196,7 @@
             text-shadow: 0 0 5px white;
         }
 
-        /* Estilo para o novo botão de imagem da carteira */
+        /* Estilo para o novo botão de imagem da carteira com animação */
         .wallet-img-btn {
             width: 44px;
             height: 44px;
@@ -204,7 +204,23 @@
             object-fit: cover;
             border: 2px solid var(--neon-pink);
             box-shadow: 0 0 15px var(--neon-pink);
-            transition: transform 0.2s;
+            animation: walletPulse 3s ease-in-out infinite;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes walletPulse {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                box-shadow: 0 0 15px var(--neon-pink);
+            }
+            50% { 
+                transform: translateY(-5px) scale(1.1);
+                box-shadow: 0 0 25px var(--neon-pink), 0 0 10px var(--neon-blue);
+            }
+        }
+
+        .wallet-img-btn:active {
+            transform: scale(0.9) rotate(15deg);
         }
 
         @media (min-width: 768px) {
@@ -280,7 +296,7 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreihhfml7xnqlbpbu2igxju62lqn3rp4yfqpus5ltrinf3t6j5nnamu?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreih44u5662jytegch5rqftwqhhnchqb5bojzpme2foixpw5doheflm?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreibd647tf3fueia3sv24me3h67tuvzusqmhyzobcv7wadhj555te4a?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlkhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreigzcn52vafn7bugsaaq5zf7ovdf7hsyvyo5e4hrtusxjhma3mv5xu?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiha6da4u7mzxfacizxdlcuyt6jmdn3jz3yrlnxcoadny6zhojknke?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
@@ -379,7 +395,7 @@
                                 ${isLiked ? m.rewards + 1 : m.rewards}
                             </span>
                         </div>
-                        <!-- Botão com a imagem da carteira -->
+                        <!-- Botão com a imagem da carteira animado -->
                         <button onclick="openTipModal('${m.cid}')" class="active:scale-90 transition-transform">
                             <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Wallet">
                         </button>
