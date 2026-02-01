@@ -179,14 +179,12 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Efeito de pulsação para botões preenchidos */
         @keyframes glow-pulse {
             0% { box-shadow: 0 0 10px var(--neon-pink); transform: scale(1); }
             50% { box-shadow: 0 0 25px var(--neon-pink); transform: scale(1.05); }
             100% { box-shadow: 0 0 10px var(--neon-pink); transform: scale(1); }
         }
 
-        /* Efeito de pulsação para bordas (Avatar) */
         @keyframes glow-pulse-border {
             0% { box-shadow: 0 0 5px var(--neon-pink); border-color: var(--neon-pink); }
             50% { box-shadow: 0 0 20px var(--neon-pink); border-color: #ffb3ff; }
@@ -196,7 +194,7 @@
 </head>
 <body class="text-white select-none">
 
-    <!-- Modal de Informações -->
+    <!-- Modals (Info & Wallet) -->
     <div id="infoModal" class="modal-base" onclick="closeInfoModal()">
         <div id="infoPanel" class="cyber-panel p-6 space-y-4" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start border-b border-fuchsia-900/50 pb-2">
@@ -216,7 +214,6 @@
         </div>
     </div>
 
-    <!-- Modal de Transferência -->
     <div id="modalOverlay" class="modal-base" onclick="closeModal()">
         <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
             <div class="flex flex-col items-center space-y-2">
@@ -270,48 +267,78 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
         ];
 
-        // Estado para controlar quais CIDs foram desbloqueados individualmente
         let unlockedCids = new Set();
         let currentActiveCid = null;
+
+        function createMemeItem(url, index) {
+            const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-00"+index;
+            const isUnlocked = unlockedCids.has(cid);
+            const item = document.createElement('div');
+            item.className = 'snap-item';
+            item.dataset.cid = cid;
+            item.innerHTML = `
+                <img src="${url}" class="meme-bg-blur" loading="lazy">
+                <img src="${url}" class="meme-main" loading="lazy">
+                <div class="overlay">
+                    <div class="absolute bottom-36 left-6 right-20">
+                        <span class="text-[8px] font-black tracking-widest text-fuchsia-500 bg-fuchsia-900/30 px-2 py-1 mb-2 inline-block uppercase">WOW_NOP</span>
+                        <h2 class="text-3xl font-black italic uppercase cyber-text-gradient truncate">${TITLES[index % TITLES.length]}</h2>
+                    </div>
+                    <div class="absolute right-6 bottom-40 flex flex-col gap-6 items-center">
+                        <div class="action-button interactive" onclick="openInfoModal('${TITLES[index % TITLES.length]}', '${cid}')">
+                            <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <button onclick="openTipModal('${cid}')" class="interactive">
+                            <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
+                        </button>
+                        <button onclick="downloadImage(this, '${url}', '${TITLES[index % TITLES.length]}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isUnlocked ? 'unlocked' : ''}">
+                            <i data-lucide="download" class="w-6 h-6 text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            return item;
+        }
 
         function loadMemes() {
             const feed = document.getElementById('feed');
             feed.innerHTML = '';
+            
+            // Loop Infinito: Adicionamos o último item no início e o primeiro no fim
+            // Isso permite que o scroll-snap "salte" sem o usuário perceber.
+            
+            // 1. Clone do último
+            feed.appendChild(createMemeItem(STATIC_IMAGES[STATIC_IMAGES.length - 1], STATIC_IMAGES.length - 1));
+            
+            // 2. Itens Reais
             STATIC_IMAGES.forEach((url, i) => {
-                const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-00"+i;
-                const isUnlocked = unlockedCids.has(cid);
-                const item = document.createElement('div');
-                item.className = 'snap-item';
-                item.dataset.cid = cid;
-                item.innerHTML = `
-                    <img src="${url}" class="meme-bg-blur">
-                    <img src="${url}" class="meme-main">
-                    <div class="overlay">
-                        <div class="absolute bottom-36 left-6 right-20">
-                            <span class="text-[8px] font-black tracking-widest text-fuchsia-500 bg-fuchsia-900/30 px-2 py-1 mb-2 inline-block uppercase">WOW_NOP</span>
-                            <h2 class="text-3xl font-black italic uppercase cyber-text-gradient truncate">${TITLES[i]}</h2>
-                        </div>
-                        <div class="absolute right-6 bottom-40 flex flex-col gap-6 items-center">
-                            <div class="action-button interactive" onclick="openInfoModal('${TITLES[i]}', '${cid}')">
-                                <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
-                            </div>
-                            <button onclick="openTipModal('${cid}')" class="interactive">
-                                <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
-                            </button>
-                            <button onclick="downloadImage(this, '${url}', '${TITLES[i]}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isUnlocked ? 'unlocked' : ''}">
-                                <i data-lucide="download" class="w-6 h-6 text-white"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                feed.appendChild(item);
+                feed.appendChild(createMemeItem(url, i));
             });
+
+            // 3. Clone do primeiro
+            feed.appendChild(createMemeItem(STATIC_IMAGES[0], 0));
+
             lucide.createIcons();
+
+            // Começar no item "real" (índice 1, já que o 0 é o clone)
+            feed.scrollTop = window.innerHeight;
+
+            // Listener de Scroll para o Loop
+            feed.addEventListener('scroll', () => {
+                const height = window.innerHeight;
+                // Se chegou no clone do topo (último item disfarçado)
+                if (feed.scrollTop <= 0) {
+                    feed.scrollTop = feed.scrollHeight - (2 * height);
+                } 
+                // Se chegou no clone do fundo (primeiro item disfarçado)
+                else if (feed.scrollTop >= feed.scrollHeight - height) {
+                    feed.scrollTop = height;
+                }
+            });
         }
 
         function unlockDownloadForCid(cid) {
             unlockedCids.add(cid);
-            // Encontra o item no feed e desbloqueia o botão específico
             const items = document.querySelectorAll('.snap-item');
             items.forEach(item => {
                 if (item.dataset.cid === cid) {
@@ -322,7 +349,6 @@
         }
 
         async function downloadImage(btn, url, filename) {
-            // Verifica se o CID desta imagem específica está desbloqueado
             const cid = url.match(/\/ipfs\/([^?]+)/)?.[1];
             if (!unlockedCids.has(cid) || btn.classList.contains('loading')) return;
 
@@ -344,7 +370,7 @@
                 
                 window.URL.revokeObjectURL(blobUrl);
             } catch (err) {
-                console.error('Falha no download direto:', err);
+                console.error('Download falhou:', err);
                 window.open(url, '_blank');
             } finally {
                 btn.classList.remove('loading');
@@ -367,7 +393,7 @@
         }
 
         function openTipModal(cid) {
-            currentActiveCid = cid; // Armazena qual CID está sendo "pago"
+            currentActiveCid = cid;
             document.getElementById('authorAddress').innerText = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
             resetCopyState();
             document.getElementById('modalOverlay').style.display = 'flex';
@@ -392,38 +418,21 @@
 
         function copyAddress() {
             const addrText = document.getElementById('authorAddress').innerText;
-            
             const textArea = document.createElement("textarea");
             textArea.value = addrText;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
             document.body.appendChild(textArea);
-            textArea.focus();
             textArea.select();
-
             try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    const container = document.getElementById('copyIconContainer');
-                    const textLabel = document.getElementById('copyText');
-                    
-                    textLabel.innerText = "Endereço Copiado!";
-                    textLabel.className = "text-green-400 uppercase font-black text-[8px] tracking-widest animate-pulse";
-                    container.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
-                    lucide.createIcons();
-
-                    // Desbloqueia APENAS o CID atual
-                    if (currentActiveCid) {
-                        unlockDownloadForCid(currentActiveCid);
-                    }
-
-                    setTimeout(resetCopyState, 2000);
-                }
-            } catch (err) {
-                console.error('Erro ao copiar', err);
-            }
-
+                document.execCommand('copy');
+                const container = document.getElementById('copyIconContainer');
+                const textLabel = document.getElementById('copyText');
+                textLabel.innerText = "Endereço Copiado!";
+                textLabel.className = "text-green-400 uppercase font-black text-[8px] tracking-widest animate-pulse";
+                container.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
+                lucide.createIcons();
+                if (currentActiveCid) unlockDownloadForCid(currentActiveCid);
+                setTimeout(resetCopyState, 2000);
+            } catch (err) {}
             document.body.removeChild(textArea);
         }
 
