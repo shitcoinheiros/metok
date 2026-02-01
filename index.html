@@ -270,15 +270,19 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
         ];
 
-        let isDownloadUnlocked = false;
+        // Estado para controlar quais CIDs foram desbloqueados individualmente
+        let unlockedCids = new Set();
+        let currentActiveCid = null;
 
         function loadMemes() {
             const feed = document.getElementById('feed');
             feed.innerHTML = '';
             STATIC_IMAGES.forEach((url, i) => {
-                const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-001";
+                const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-00"+i;
+                const isUnlocked = unlockedCids.has(cid);
                 const item = document.createElement('div');
                 item.className = 'snap-item';
+                item.dataset.cid = cid;
                 item.innerHTML = `
                     <img src="${url}" class="meme-bg-blur">
                     <img src="${url}" class="meme-main">
@@ -294,7 +298,7 @@
                             <button onclick="openTipModal('${cid}')" class="interactive">
                                 <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
                             </button>
-                            <button onclick="downloadImage(this, '${url}', '${TITLES[i]}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isDownloadUnlocked ? 'unlocked' : ''}">
+                            <button onclick="downloadImage(this, '${url}', '${TITLES[i]}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isUnlocked ? 'unlocked' : ''}">
                                 <i data-lucide="download" class="w-6 h-6 text-white"></i>
                             </button>
                         </div>
@@ -305,14 +309,22 @@
             lucide.createIcons();
         }
 
-        function unlockDownload() {
-            isDownloadUnlocked = true;
-            const buttons = document.querySelectorAll('.download-btn');
-            buttons.forEach(btn => btn.classList.add('unlocked'));
+        function unlockDownloadForCid(cid) {
+            unlockedCids.add(cid);
+            // Encontra o item no feed e desbloqueia o botão específico
+            const items = document.querySelectorAll('.snap-item');
+            items.forEach(item => {
+                if (item.dataset.cid === cid) {
+                    const btn = item.querySelector('.download-btn');
+                    if (btn) btn.classList.add('unlocked');
+                }
+            });
         }
 
         async function downloadImage(btn, url, filename) {
-            if (!isDownloadUnlocked || btn.classList.contains('loading')) return;
+            // Verifica se o CID desta imagem específica está desbloqueado
+            const cid = url.match(/\/ipfs\/([^?]+)/)?.[1];
+            if (!unlockedCids.has(cid) || btn.classList.contains('loading')) return;
 
             try {
                 btn.classList.add('loading');
@@ -355,6 +367,7 @@
         }
 
         function openTipModal(cid) {
+            currentActiveCid = cid; // Armazena qual CID está sendo "pago"
             document.getElementById('authorAddress').innerText = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
             resetCopyState();
             document.getElementById('modalOverlay').style.display = 'flex';
@@ -364,6 +377,7 @@
         function closeModal() {
             const p = document.getElementById('walletPanel');
             p.classList.replace('panel-open', 'panel-close');
+            currentActiveCid = null;
             setTimeout(() => { document.getElementById('modalOverlay').style.display = 'none'; }, 300);
         }
 
@@ -399,7 +413,10 @@
                     container.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
                     lucide.createIcons();
 
-                    unlockDownload();
+                    // Desbloqueia APENAS o CID atual
+                    if (currentActiveCid) {
+                        unlockDownloadForCid(currentActiveCid);
+                    }
 
                     setTimeout(resetCopyState, 2000);
                 }
