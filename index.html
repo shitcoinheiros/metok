@@ -15,7 +15,6 @@
             font-family: system-ui, -apple-system, sans-serif;
             position: fixed;
         }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -165,7 +164,6 @@
 
     <div id="statusOverlay">AÇÃO CONCLUÍDA! 🚀</div>
 
-    <!-- Modal de Gorjeta -->
     <div id="modalOverlay" onclick="closeModal()">
         <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-[32px] w-full max-w-sm text-center space-y-6 shadow-2xl" onclick="event.stopPropagation()">
             <div class="w-16 h-16 bg-yellow-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -209,8 +207,22 @@
     </nav>
 
     <script>
-        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIyYWEzYmZlZC05ZmFiLTRmMDYtYjAzYi1mZWZiMDI5OWQ3MDgiLCJlbWFpbCI6InNoaXRjb2luaGVpcm9zQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiI3YjRiNmQ5OGM2ZDI5MTFlM2FiMiIsInNjb3BlZEtleVNlY3JldCI6ImY0ZWYzNjY1MzY3ODdiMjRkOGM4YmFlNGJiNTU3NGZiMTMyYmQ0YzRhMzI2ODY2MDU5OTY3N2M4NzE5ZWRhZTAiLCJleHAiOjE4MDEyNzMyMzN9.lUdaLbj_IpiRheeFaUPGNmEt8nbF_5hg0LoSBQNnM1U";
-        const GATEWAY = "jade-detailed-slug-469.mypinata.cloud";
+        // Configurações
+        const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
+        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Mantenha seu JWT aqui para uploads
+
+        // Lista fixa de imagens conforme sua solicitação
+        const STATIC_IMAGES = [
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreihhfml7xnqlbpbu2igxju62lqn3rp4yfqpus5ltrinf3t6j5nnamu?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreih44u5662jytegch5rqftwqhhnchqb5bojzpme2foixpw5doheflm?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreibd647tf3fueia3sv24me3h67tuvzusqmhyzobcv7wadhj555te4a?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlkhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreigzcn52vafn7bugsaaq5zf7ovdf7hsyvyo5e4hrtusxjhma3mv5xu?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiha6da4u7mzxfacizxdlcuyt6jmdn3jz3yrlnxcoadny6zhojknke?pinataGatewayToken=${TOKEN}`,
+            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
+        ];
 
         let memes = [];
         const likedMemes = new Set();
@@ -222,7 +234,6 @@
         const statusOverlay = document.getElementById('statusOverlay');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const modalOverlay = document.getElementById('modalOverlay');
-        const loadingText = document.getElementById('loadingText');
 
         lucide.createIcons();
 
@@ -238,20 +249,17 @@
                 rewardSpan.classList.add('opacity-100', 'text-yellow-400');
                 rewardSpan.classList.remove('opacity-60');
             }
-
             container.style.transform = 'scale(1.15)';
             setTimeout(() => container.style.transform = 'scale(1)', 200);
         }
 
         function openTipModal(cid) {
-            const mockAddress = `WOWN${cid.substring(0, 8)}${Math.random().toString(36).substring(7).toUpperCase()}`;
+            const mockAddress = `WOWN${cid.substring(0, 8).toUpperCase()}${Math.random().toString(36).substring(7).toUpperCase()}`;
             document.getElementById('authorAddress').innerText = mockAddress;
             modalOverlay.style.display = 'flex';
         }
 
-        function closeModal() {
-            modalOverlay.style.display = 'none';
-        }
+        function closeModal() { modalOverlay.style.display = 'none'; }
 
         function copyAddress() {
             const text = document.getElementById('authorAddress').innerText;
@@ -261,7 +269,6 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            
             showStatus("ENDEREÇO COPIADO!");
         }
 
@@ -271,23 +278,24 @@
             setTimeout(() => statusOverlay.style.display = 'none', 2000);
         }
 
-        async function fetchPinataFiles() {
+        function loadStaticMemes() {
             loadingOverlay.style.display = 'flex';
-            loadingText.innerText = "BUSCANDO NO IPFS...";
-            try {
-                const response = await fetch("https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=20", {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` }
-                });
-                const data = await response.json();
-                memes = data.rows.map(item => ({
-                    cid: item.ipfs_pin_hash,
-                    url: `https://${GATEWAY}/ipfs/${item.ipfs_pin_hash}`,
-                    rewards: Math.floor(Math.random() * 999)
-                }));
-                renderFeed();
-            } catch (err) { console.error(err); } 
-            finally { loadingOverlay.style.display = 'none'; }
+            
+            // Mapeia os links estáticos para o formato do app
+            memes = STATIC_IMAGES.map((url, index) => {
+                // Tenta extrair o CID da URL para exibição
+                const cidMatch = url.match(/\/ipfs\/([^?]+)/);
+                const displayCid = cidMatch ? cidMatch[1] : `ID-${index}`;
+                
+                return {
+                    cid: displayCid,
+                    url: url,
+                    rewards: Math.floor(Math.random() * 500) + 100
+                };
+            });
+
+            renderFeed();
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 800);
         }
 
         function createItemElement(m) {
@@ -301,24 +309,19 @@
                     <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
                         <span class="bg-yellow-400 text-black px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-tighter uppercase mb-2 md:mb-3 inline-block italic">IPFS STORAGE</span>
                         <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
-                        <p class="text-[7px] md:text-[8px] font-mono opacity-30 mt-2 truncate w-32 md:w-40">CID: ${m.cid.substring(0,20)}...</p>
+                        <p class="text-[7px] md:text-[8px] font-mono opacity-30 mt-2 truncate w-32 md:w-40">CID: ${m.cid.substring(0,15)}...</p>
                     </div>
                     
                     <div class="absolute right-5 md:right-8 bottom-36 md:bottom-44 flex flex-col items-center gap-6 md:gap-5">
-                        <!-- Reaction -->
                         <div class="reaction-container" id="react-${m.cid}">
                             <span class="emoji-icon ${isLiked ? 'active' : ''}">${isLiked ? '😂' : '😐'}</span>
                             <span class="reward-count text-[10px] md:text-[11px] font-black ${isLiked ? 'opacity-100 text-yellow-400' : 'opacity-60'} mt-[-2px] tabular-nums italic transition-all">
                                 ${isLiked ? m.rewards + 1 : m.rewards}
                             </span>
                         </div>
-
-                        <!-- Gorjeta (Tip Button com Ícone de Cifrão) -->
                         <button onclick="openTipModal('${m.cid}')" class="w-10 h-10 md:w-12 md:h-12 bg-yellow-400 text-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.3)] active:scale-90 transition-transform">
                             <i data-lucide="dollar-sign" class="w-5 h-5 md:w-6 md:h-6"></i>
                         </button>
-
-                        <!-- Share -->
                         <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
                             <i data-lucide="share-2" class="w-4 h-4 md:w-5 md:h-5"></i>
                         </button>
@@ -340,17 +343,16 @@
         }
 
         uploadBtn.addEventListener('click', () => fileInput.click());
-        refreshBtn.addEventListener('click', fetchPinataFiles);
+        refreshBtn.addEventListener('click', loadStaticMemes);
 
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
             loadingOverlay.style.display = 'flex';
-            loadingText.innerText = "SUBINDO PARA O IPFS...";
+            document.getElementById('loadingText').innerText = "SUBINDO PARA O IPFS...";
             try {
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('pinataMetadata', JSON.stringify({ name: `MemeTok_${Date.now()}` }));
                 const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` },
@@ -358,17 +360,16 @@
                 });
                 if (!response.ok) throw new Error("Falha no upload");
                 showStatus("MEME ETERNIZADO! 🚀");
-                setTimeout(fetchPinataFiles, 1500);
-            } catch (err) { 
-                console.error(err);
-            } 
+            } catch (err) { console.error(err); } 
             finally { 
                 loadingOverlay.style.display = 'none'; 
                 fileInput.value = '';
+                document.getElementById('loadingText').innerText = "PROCESSANDO...";
             }
         });
 
-        fetchPinataFiles();
+        // Inicialização
+        window.onload = loadStaticMemes;
     </script>
 </body>
 </html>
