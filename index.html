@@ -3,18 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MemeTok - Gorjetas IPFS</title>
+    <title>MemeTok - Cyberpunk IPFS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00f2ff;
+            --cyber-dark: #120016;
+        }
+
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             overflow-x: hidden;
             overflow-y: hidden;
-            background: #000;
-            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--cyber-dark);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             position: fixed;
         }
+
+        /* Efeito de Scanline Cyberpunk */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -39,7 +59,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #000;
+            background: radial-gradient(circle at center, #2e003e 0%, var(--cyber-dark) 100%);
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -50,10 +70,11 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: blur(80px) brightness(0.2);
-            transform: scale(1.3);
+            filter: blur(60px) brightness(0.4) saturate(2);
+            transform: scale(1.4);
             z-index: 0;
             pointer-events: none;
+            opacity: 0.6;
         }
 
         .meme-main {
@@ -62,8 +83,9 @@
             max-height: 70vh;
             max-width: 95%;
             object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border-radius: 4px;
+            box-shadow: 0 0 30px var(--neon-pink), 0 0 10px var(--neon-blue);
+            border: 1px solid rgba(255, 0, 255, 0.3);
             opacity: 0;
             transition: opacity 0.5s ease;
             transform: translateY(-12%);
@@ -75,7 +97,7 @@
             inset: 0;
             pointer-events: none;
             z-index: 20;
-            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 50%, transparent 100%);
+            background: linear-gradient(0deg, rgba(18,0,22,0.9) 0%, transparent 40%, transparent 100%);
             padding-bottom: env(safe-area-inset-bottom);
             width: 100%;
         }
@@ -83,9 +105,10 @@
         .overlay button, .reaction-container, .tip-container { pointer-events: auto; }
 
         .btn-glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 0, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--neon-pink);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
         }
 
         .reaction-container {
@@ -99,7 +122,7 @@
         .emoji-icon {
             font-size: 34px; 
             display: inline-block;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 0 8px var(--neon-pink));
             animation: floatIdle 3s ease-in-out infinite;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -116,7 +139,7 @@
 
         .emoji-icon.active {
             animation: laughActive 0.6s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.25));
+            filter: drop-shadow(0 0 15px var(--neon-blue));
         }
 
         @keyframes laughActive {
@@ -130,22 +153,22 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            background: #fbbf24;
+            background: var(--neon-blue);
             color: black;
             padding: 10px 20px;
-            border-radius: 50px;
+            border-radius: 2px;
             font-weight: 900;
             font-size: 10px;
             display: none;
-            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
-            letter-spacing: 0.1em;
-            white-space: nowrap;
+            box-shadow: 0 0 20px var(--neon-blue);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
 
         #loadingOverlay, #modalOverlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(18, 0, 22, 0.9);
             z-index: 200;
             display: none;
             flex-direction: column;
@@ -158,34 +181,48 @@
             z-index: 300;
             padding: 20px;
         }
+
+        .cyber-text-gradient {
+            background: linear-gradient(to bottom, #fff, var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+
+        .cyber-button-main {
+            background: var(--neon-pink);
+            color: white;
+            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 10px rgba(255,255,255,0.5);
+            text-shadow: 0 0 5px white;
+        }
     </style>
 </head>
 <body class="text-white select-none">
 
-    <div id="statusOverlay">AÇÃO CONCLUÍDA! 🚀</div>
+    <div id="statusOverlay">SYSTEM_UPDATE: SUCCESS 🚀</div>
 
     <div id="modalOverlay" onclick="closeModal()">
-        <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-[32px] w-full max-w-sm text-center space-y-6 shadow-2xl" onclick="event.stopPropagation()">
-            <div class="w-16 h-16 bg-yellow-400/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="coins" class="text-yellow-400 w-8 h-8"></i>
+        <div class="bg-zinc-950 border-2 border-fuchsia-600 p-8 rounded-lg w-full max-w-sm text-center space-y-6 shadow-[0_0_50px_rgba(255,0,255,0.4)]" onclick="event.stopPropagation()">
+            <div class="w-16 h-16 bg-fuchsia-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-fuchsia-500">
+                <i data-lucide="zap" class="text-fuchsia-400 w-8 h-8 fill-current"></i>
             </div>
-            <h3 class="text-xl font-black italic tracking-tighter uppercase">Enviar Gorjeta</h3>
-            <p class="text-zinc-400 text-[11px] leading-relaxed">Envie WOWNERO ou moedas para apoiar o criador deste meme. Copie o endereço abaixo:</p>
+            <h3 class="text-2xl font-black italic tracking-tighter uppercase cyber-text-gradient">Transferir Créditos</h3>
+            <p class="text-zinc-400 text-[10px] leading-relaxed uppercase tracking-wider">Apoie o criador deste artefato digital via Protocolo WOWNERO:</p>
             
-            <div class="bg-black/50 p-4 rounded-2xl border border-zinc-800 relative group cursor-pointer active:scale-95 transition-all" onclick="copyAddress()">
-                <p id="authorAddress" class="font-mono text-[10px] text-yellow-500 break-all leading-relaxed">4Ad6n9j...random_address_placeholder_9921</p>
-                <div class="mt-2 text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Clique para copiar</div>
+            <div class="bg-fuchsia-950/30 p-4 rounded border border-fuchsia-500/50 relative group cursor-pointer active:scale-95 transition-all" onclick="copyAddress()">
+                <p id="authorAddress" class="font-mono text-[10px] text-cyan-400 break-all leading-relaxed">4Ad6n9j...CYBER_ADDR_7721</p>
+                <div class="mt-2 text-[8px] font-bold text-fuchsia-400 uppercase tracking-[0.3em]">Copy_Address</div>
             </div>
 
-            <button onclick="closeModal()" class="w-full py-4 rounded-full bg-white text-black font-black text-[10px] tracking-[0.2em] uppercase active:scale-95 transition-all">
-                Fechar
+            <button onclick="closeModal()" class="w-full py-4 rounded-sm bg-white text-black font-black text-[10px] tracking-[0.2em] uppercase active:scale-95 transition-all border-b-4 border-fuchsia-500">
+                Abortar
             </button>
         </div>
     </div>
 
     <div id="loadingOverlay">
-        <div class="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p id="loadingText" class="text-[9px] font-black tracking-[0.4em] text-center px-4">PROCESSANDO...</p>
+        <div class="w-12 h-12 border-2 border-cyan-400 border-t-fuchsia-500 rounded-full animate-spin mb-4 shadow-[0_0_15px_#00f2ff]"></div>
+        <p id="loadingText" class="text-[9px] font-black tracking-[0.4em] text-cyan-400 text-center px-4">INITIALIZING_NEURAL_LINK...</p>
     </div>
 
     <div id="feed" class="no-scrollbar"></div>
@@ -193,25 +230,23 @@
     <input type="file" id="fileInput" accept="image/*" class="hidden">
 
     <nav class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-4 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black to-transparent">
-        <button id="refreshBtn" class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="refresh-cw" class="w-5 h-5 md:w-6 md:h-6 opacity-60"></i>
+        <button id="refreshBtn" class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-sm flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="refresh-cw" class="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400"></i>
         </button>
         
-        <button id="uploadBtn" class="bg-white text-black h-12 md:h-14 px-8 md:px-12 rounded-full font-black text-[10px] md:text-[11px] tracking-[0.2em] md:tracking-[0.3em] shadow-2xl active:scale-95 transition-all uppercase">
-            UPLOAD IPFS
+        <button id="uploadBtn" class="cyber-button-main h-12 md:h-14 px-8 md:px-12 rounded-sm font-black text-[10px] md:text-[11px] tracking-[0.3em] active:scale-95 transition-all uppercase">
+            UPLOAD_TO_IPFS
         </button>
 
-        <button class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-full flex items-center justify-center active:scale-90 transition-all">
-            <i data-lucide="trophy" class="w-5 h-5 md:w-6 md:h-6 text-yellow-500"></i>
+        <button class="w-12 h-12 md:w-14 md:h-14 btn-glass rounded-sm flex items-center justify-center active:scale-90 transition-all">
+            <i data-lucide="glitch" class="w-5 h-5 md:w-6 md:h-6 text-cyan-400"></i>
         </button>
     </nav>
 
     <script>
-        // Configurações
         const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
-        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Mantenha seu JWT aqui para uploads
+        const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; 
 
-        // Lista fixa de imagens conforme sua solicitação
         const STATIC_IMAGES = [
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
@@ -246,15 +281,15 @@
                 likedMemes.add(cid);
                 const current = parseInt(rewardSpan.innerText);
                 rewardSpan.innerText = current + 1;
-                rewardSpan.classList.add('opacity-100', 'text-yellow-400');
+                rewardSpan.classList.add('opacity-100', 'text-cyan-400');
                 rewardSpan.classList.remove('opacity-60');
             }
-            container.style.transform = 'scale(1.15)';
-            setTimeout(() => container.style.transform = 'scale(1)', 200);
+            container.style.transform = 'scale(1.15) skewX(-5deg)';
+            setTimeout(() => container.style.transform = 'scale(1) skewX(0deg)', 200);
         }
 
         function openTipModal(cid) {
-            const mockAddress = `WOWN${cid.substring(0, 8).toUpperCase()}${Math.random().toString(36).substring(7).toUpperCase()}`;
+            const mockAddress = `CYBR-${cid.substring(0, 4).toUpperCase()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
             document.getElementById('authorAddress').innerText = mockAddress;
             modalOverlay.style.display = 'flex';
         }
@@ -269,7 +304,7 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            showStatus("ENDEREÇO COPIADO!");
+            showStatus("DATALINK_COPIED!");
         }
 
         function showStatus(msg) {
@@ -280,22 +315,14 @@
 
         function loadStaticMemes() {
             loadingOverlay.style.display = 'flex';
-            
-            // Mapeia os links estáticos para o formato do app
             memes = STATIC_IMAGES.map((url, index) => {
-                // Tenta extrair o CID da URL para exibição
                 const cidMatch = url.match(/\/ipfs\/([^?]+)/);
-                const displayCid = cidMatch ? cidMatch[1] : `ID-${index}`;
-                
-                return {
-                    cid: displayCid,
-                    url: url,
-                    rewards: Math.floor(Math.random() * 500) + 100
-                };
+                const displayCid = cidMatch ? cidMatch[1] : `DATA-${index}`;
+                return { cid: displayCid, url: url, rewards: Math.floor(Math.random() * 800) + 200 };
             });
 
             renderFeed();
-            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 800);
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 1200);
         }
 
         function createItemElement(m) {
@@ -307,23 +334,23 @@
                 <img src="${m.url}" class="meme-main" onload="this.style.opacity=1">
                 <div class="overlay">
                     <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
-                        <span class="bg-yellow-400 text-black px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-tighter uppercase mb-2 md:mb-3 inline-block italic">IPFS STORAGE</span>
-                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85]">Eterno<br>Meme</h2>
-                        <p class="text-[7px] md:text-[8px] font-mono opacity-30 mt-2 truncate w-32 md:w-40">CID: ${m.cid.substring(0,15)}...</p>
+                        <span class="bg-fuchsia-600 text-white px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-widest uppercase mb-2 md:mb-3 inline-block italic shadow-[0_0_10px_#ff00ff]">NEURAL_STORAGE</span>
+                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85] cyber-text-gradient">Protocolo<br>Meme</h2>
+                        <p class="text-[7px] md:text-[8px] font-mono text-cyan-400/50 mt-2 truncate w-32 md:w-40 tracking-widest">CID::${m.cid.substring(0,12)}</p>
                     </div>
                     
                     <div class="absolute right-5 md:right-8 bottom-36 md:bottom-44 flex flex-col items-center gap-6 md:gap-5">
                         <div class="reaction-container" id="react-${m.cid}">
                             <span class="emoji-icon ${isLiked ? 'active' : ''}">${isLiked ? '😂' : '😐'}</span>
-                            <span class="reward-count text-[10px] md:text-[11px] font-black ${isLiked ? 'opacity-100 text-yellow-400' : 'opacity-60'} mt-[-2px] tabular-nums italic transition-all">
+                            <span class="reward-count text-[10px] md:text-[11px] font-black ${isLiked ? 'opacity-100 text-cyan-400' : 'opacity-60'} mt-[-2px] tabular-nums italic transition-all">
                                 ${isLiked ? m.rewards + 1 : m.rewards}
                             </span>
                         </div>
-                        <button onclick="openTipModal('${m.cid}')" class="w-10 h-10 md:w-12 md:h-12 bg-yellow-400 text-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.3)] active:scale-90 transition-transform">
-                            <i data-lucide="dollar-sign" class="w-5 h-5 md:w-6 md:h-6"></i>
+                        <button onclick="openTipModal('${m.cid}')" class="w-10 h-10 md:w-12 md:h-12 bg-fuchsia-600 text-white rounded-sm flex items-center justify-center shadow-[0_0_15px_rgba(255,0,255,0.6)] active:scale-90 transition-transform">
+                            <i data-lucide="zap" class="w-5 h-5 md:w-6 md:h-6 fill-current"></i>
                         </button>
-                        <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
-                            <i data-lucide="share-2" class="w-4 h-4 md:w-5 md:h-5"></i>
+                        <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-sm flex items-center justify-center active:scale-90 transition-transform">
+                            <i data-lucide="share" class="w-4 h-4 md:w-5 md:h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -349,7 +376,7 @@
             const file = e.target.files[0];
             if (!file) return;
             loadingOverlay.style.display = 'flex';
-            document.getElementById('loadingText').innerText = "SUBINDO PARA O IPFS...";
+            document.getElementById('loadingText').innerText = "UPLOADING_TO_GRID...";
             try {
                 const formData = new FormData();
                 formData.append('file', file);
@@ -358,17 +385,16 @@
                     headers: { 'Authorization': `Bearer ${PINATA_JWT.trim()}` },
                     body: formData
                 });
-                if (!response.ok) throw new Error("Falha no upload");
-                showStatus("MEME ETERNIZADO! 🚀");
+                if (!response.ok) throw new Error("Connection Refused");
+                showStatus("DATA_UPLOAD_COMPLETE! 🌐");
             } catch (err) { console.error(err); } 
             finally { 
                 loadingOverlay.style.display = 'none'; 
                 fileInput.value = '';
-                document.getElementById('loadingText').innerText = "PROCESSANDO...";
+                document.getElementById('loadingText').innerText = "WAITING_FOR_UPLINK...";
             }
         });
 
-        // Inicialização
         window.onload = loadStaticMemes;
     </script>
 </body>
