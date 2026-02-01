@@ -29,7 +29,7 @@
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 255, 0, 0.06));
             z-index: 100;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
@@ -247,6 +247,18 @@
         const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
         const PINATA_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; 
 
+        const TITLES = [
+            "Court Jester",
+            "Commoner",
+            "Soldier",
+            "Mercenary",
+            "Farmer",
+            "Knight",
+            "Baron",
+            "Lord",
+            "King"
+        ];
+
         const STATIC_IMAGES = [
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
@@ -318,7 +330,14 @@
             memes = STATIC_IMAGES.map((url, index) => {
                 const cidMatch = url.match(/\/ipfs\/([^?]+)/);
                 const displayCid = cidMatch ? cidMatch[1] : `DATA-${index}`;
-                return { cid: displayCid, url: url, rewards: Math.floor(Math.random() * 800) + 200 };
+                // Usa o título da lista ou fallback
+                const workTitle = TITLES[index] || "Unknown Entity";
+                return { 
+                    cid: displayCid, 
+                    url: url, 
+                    rewards: Math.floor(Math.random() * 800) + 200,
+                    title: workTitle
+                };
             });
 
             renderFeed();
@@ -335,7 +354,7 @@
                 <div class="overlay">
                     <div class="absolute bottom-32 md:bottom-40 left-6 md:left-10 pr-20">
                         <span class="bg-fuchsia-600 text-white px-2 py-0.5 text-[8px] md:text-[9px] font-black tracking-widest uppercase mb-2 md:mb-3 inline-block italic shadow-[0_0_10px_#ff00ff]">NEURAL_STORAGE</span>
-                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85] cyber-text-gradient">Protocolo<br>Meme</h2>
+                        <h2 class="text-3xl md:text-4xl font-black italic tracking-tighter uppercase leading-[0.85] cyber-text-gradient">${m.title}</h2>
                         <p class="text-[7px] md:text-[8px] font-mono text-cyan-400/50 mt-2 truncate w-32 md:w-40 tracking-widest">CID::${m.cid.substring(0,12)}</p>
                     </div>
                     
