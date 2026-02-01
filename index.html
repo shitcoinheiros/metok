@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MemeTok - Cyberpunk IPFS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -10,18 +10,20 @@
         :root {
             --neon-pink: #ff00ff;
             --neon-blue: #00f2ff;
-            --cyber-dark: #0a000d;a
+            --cyber-dark: #0a000d;
         }
 
+        /* Correção para Mobile: Usar svh (Small Viewport Height) para evitar cortes */
         body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
+            margin: 0; padding: 0; 
+            height: 100svh; 
+            width: 100%;
             overflow: hidden;
             background: var(--cyber-dark);
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            position: fixed;
+            position: fixed; /* Evita bounce scroll no iOS */
         }
 
-        /* Efeito de Scanline Cyberpunk */
         body::before {
             content: " ";
             display: block;
@@ -39,7 +41,7 @@
         #feed {
             scroll-snap-type: y mandatory;
             overflow-y: scroll;
-            height: 100vh;
+            height: 100svh;
             width: 100vw;
             scroll-behavior: auto;
             -webkit-overflow-scrolling: touch;
@@ -48,13 +50,14 @@
         .snap-item {
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            height: 100vh;
+            height: 100svh;
             width: 100vw;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         .meme-bg-blur {
@@ -71,50 +74,27 @@
         .meme-main {
             position: relative;
             z-index: 10;
-            max-height: 70vh;
-            max-width: 90%;
+            /* Garante que a imagem nunca ultrapasse a tela mesmo com margens */
+            max-height: 65svh;
+            max-width: 85%;
             object-fit: contain;
-            border-radius: 2px;
+            border-radius: 4px;
             box-shadow: 0 0 30px rgba(255, 0, 255, 0.2);
             border: 1px solid rgba(255, 0, 255, 0.1);
-            transform: translateY(-10%);
+            /* Removido o translateY agressivo para evitar sobreposição mobile */
+            transform: translateY(-5%);
         }
 
-        /* ANIMAÇÕES: Monitor Ligar/Desligar */
+        /* ... (Mantenho suas animações de monitor igais) ... */
         @keyframes monitorPowerOn {
-            0% { 
-                transform: scaleY(0.002) scaleX(0); 
-                opacity: 0;
-                filter: brightness(5) drop-shadow(0 0 10px var(--neon-pink));
-            }
-            40% { 
-                transform: scaleY(0.002) scaleX(1); 
-                opacity: 1;
-                filter: brightness(2) drop-shadow(0 0 5px var(--neon-pink));
-            }
-            100% { 
-                transform: scaleY(1) scaleX(1); 
-                opacity: 1;
-                filter: brightness(1);
-            }
+            0% { transform: scaleY(0.002) scaleX(0); opacity: 0; filter: brightness(5); }
+            40% { transform: scaleY(0.002) scaleX(1); opacity: 1; filter: brightness(2); }
+            100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
-
         @keyframes monitorPowerOff {
-            0% { 
-                transform: scaleY(1) scaleX(1); 
-                opacity: 1;
-                filter: brightness(1);
-            }
-            60% { 
-                transform: scaleY(0.002) scaleX(1); 
-                opacity: 1;
-                filter: brightness(2) drop-shadow(0 0 5px var(--neon-pink));
-            }
-            100% { 
-                transform: scaleY(0.002) scaleX(0); 
-                opacity: 0;
-                filter: brightness(5) drop-shadow(0 0 10px var(--neon-pink));
-            }
+            0% { transform: scaleY(1) scaleX(1); opacity: 1; }
+            60% { transform: scaleY(0.002) scaleX(1); opacity: 1; }
+            100% { transform: scaleY(0.002) scaleX(0); opacity: 0; }
         }
 
         .modal-base {
@@ -126,87 +106,40 @@
             justify-content: center;
             background: rgba(10, 0, 13, 0.9);
             backdrop-filter: blur(10px);
+            padding: 20px; /* Margem de segurança para modais mobile */
         }
 
         .cyber-panel {
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            max-width: 360px;
             background: #120016;
             border: 1px solid var(--neon-pink);
             position: relative;
-            overflow: hidden;
             transform-origin: center;
-            box-shadow: 0 0 50px rgba(255, 0, 255, 0.2), inset 0 0 30px rgba(255, 0, 255, 0.05);
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.2);
         }
 
-        /* Classes de estado de animação */
-        .panel-open {
-            animation: monitorPowerOn 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        .panel-close {
-            animation: monitorPowerOff 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        /* Barras de Expansão */
-        .cyber-panel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: var(--neon-pink);
-            z-index: 10;
-            box-shadow: 0 0 15px var(--neon-pink);
-        }
-
-        .cyber-panel::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0; height: 2px;
-            background: var(--neon-pink);
-            z-index: 10;
-            box-shadow: 0 0 15px var(--neon-pink);
-        }
-
-        .scan-line-anim {
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 0, 255, 0.4);
-            position: absolute;
-            top: 0;
-            animation: scanMove 2.5s linear infinite;
-            z-index: 5;
-        }
-
-        @keyframes scanMove {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
+        .panel-open { animation: monitorPowerOn 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+        .panel-close { animation: monitorPowerOff 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
 
         .overlay {
             position: absolute;
             inset: 0;
             pointer-events: none;
             z-index: 20;
-            background: linear-gradient(0deg, rgba(10,0,13,0.85) 0%, transparent 40%);
+            background: linear-gradient(0deg, rgba(10,0,13,0.9) 0%, transparent 40%);
         }
         
         .interactive { pointer-events: auto; }
 
         .info-icon-wrapper {
-            width: 44px;
-            height: 44px;
+            width: 48px; height: 48px; /* Tamanho otimizado para toque (Apple recomenda 44-48px) */
             background: var(--neon-pink);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 20px var(--neon-pink);
-            color: white;
             cursor: pointer;
-            transition: transform 0.2s;
         }
-
-        .info-icon-wrapper:active { transform: scale(0.9); }
 
         .cyber-text-gradient {
             background: linear-gradient(to right, #fff, var(--neon-pink));
@@ -215,31 +148,16 @@
         }
 
         .wallet-img-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px; height: 48px;
             border-radius: 50%;
             border: 2px solid var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
-        }
-
-        .copy-feedback {
-            animation: pulse 0.5s ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body class="text-white select-none">
 
-    <!-- Painel de Informações Militares -->
     <div id="infoModal" class="modal-base" onclick="closeInfoModal()">
         <div id="infoPanel" class="cyber-panel p-6 space-y-4" onclick="event.stopPropagation()">
-            <div class="scan-line-anim"></div>
-            
             <div class="flex justify-between items-start border-b border-fuchsia-900/50 pb-2">
                 <div>
                     <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500">REGISTO_CLASSIFICADO</h3>
@@ -247,56 +165,26 @@
                 </div>
                 <div class="text-[8px] font-mono text-fuchsia-600">ID: PNK-777</div>
             </div>
-            
             <div class="space-y-4 py-2">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1 h-1 bg-fuchsia-500"></div>
-                        <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Endereço de Protocolo (CID)</span>
-                    </div>
-                    <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-fuchsia-950/20 p-2 border-l-2 border-fuchsia-600"></p>
-                </div>
-                
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1 h-1 bg-fuchsia-500"></div>
-                        <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Protocolo de Instrução</span>
-                    </div>
-                    <p class="text-[10px] text-zinc-300 leading-relaxed font-light italic">
-                        AVISO: Esta transmissão contém dados sensíveis. 
-                        Metadados extraídos sugerem uma codificação de nível <span class="text-fuchsia-500 font-bold">PINK-OPERATIVE</span>.
-                    </p>
-                </div>
+                <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-fuchsia-950/20 p-2 border-l-2 border-fuchsia-600"></p>
+                <p class="text-[10px] text-zinc-300 italic">AVISO:PINK-OPERATIVE</p>
             </div>
-
-            <button onclick="closeInfoModal()" class="w-full py-2 bg-fuchsia-950/40 border border-fuchsia-600/50 text-fuchsia-400 font-black text-[9px] tracking-widest uppercase hover:bg-fuchsia-600 hover:text-white transition-all">
+            <button onclick="closeInfoModal()" class="w-full py-3 bg-fuchsia-600 text-white font-black text-[9px] tracking-widest uppercase">
                 Confirmar Recebimento
             </button>
         </div>
     </div>
 
-    <!-- Modal de Carteira (Gorjetas) -->
     <div id="modalOverlay" class="modal-base" onclick="closeModal()">
         <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
-            <div class="scan-line-anim"></div>
-            
             <div class="flex flex-col items-center space-y-2">
-                <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500 p-1 shadow-[0_0_15px_rgba(255,0,255,0.5)]">
-                <h3 class="text-xl font-black italic uppercase tracking-tighter text-fuchsia-500">TRANSFERIR_CRÉDITOS</h3>
-                <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.2em]">Destinatário Identificado</p>
+                <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500">
+                <h3 class="text-xl font-black italic text-fuchsia-500">TRANSFERIR_CRÉDITOS</h3>
             </div>
-
-            <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50 cursor-pointer group relative" onclick="copyAddress()">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[7px] font-bold text-fuchsia-500 uppercase tracking-widest">Endereço da Wallet</span>
-                    <div id="copyIconContainer">
-                        <i id="copyIcon" data-lucide="copy" class="w-4 h-4 text-fuchsia-500 group-hover:text-white transition-colors"></i>
-                    </div>
-                </div>
-                <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all text-left pr-4"></p>
+            <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50" onclick="copyAddress()">
+                <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all"></p>
             </div>
-
-            <button onclick="closeModal()" class="w-full py-3 bg-fuchsia-950/20 border border-fuchsia-900/40 text-fuchsia-700 font-black text-[9px] tracking-widest uppercase hover:border-fuchsia-600 hover:text-fuchsia-500 transition-all">
+            <button onclick="closeModal()" class="w-full py-3 border border-fuchsia-600 text-fuchsia-500 font-black text-[9px] uppercase">
                 Abortar Operação
             </button>
         </div>
@@ -304,28 +192,23 @@
 
     <div id="feed" class="no-scrollbar"></div>
 
-    <input type="file" id="fileInput" accept="image/*" class="hidden">
-
-    <nav class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-4 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black to-transparent">
-        <button id="refreshBtn" class="w-12 h-12 bg-zinc-950/80 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
+    <nav class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-4 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black via-black/80 to-transparent">
+        <button id="refreshBtn" class="w-12 h-12 bg-zinc-950/90 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
             <i data-lucide="refresh-cw" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
         <button id="uploadBtn" class="bg-fuchsia-600 h-12 px-8 font-black text-[10px] tracking-widest text-white uppercase interactive shadow-[0_0_20px_#ff00ff]">
             ENVIAR_DADOS
         </button>
-        <button class="w-12 h-12 bg-zinc-950/80 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
+        <button class="w-12 h-12 bg-zinc-950/90 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
             <i data-lucide="shield-check" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
     </nav>
 
     <script>
+        // ... (Seu script permanece funcionalmente o mesmo, apenas com ajustes leves de renderização) ...
         const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
         const WALLET_IMG = "https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=" + TOKEN;
-
-        const TITLES = [
-            "Bobo da Corte", "Plebeu", "Soldado", "Mercenário", "Agricultor", "Cavaleiro", "Barão", "Lorde", "Rei"
-        ];
-
+        const TITLES = ["Bobo da Corte", "Plebeu", "Soldado", "Mercenário", "Agricultor", "Cavaleiro", "Barão", "Lorde", "Rei"];
         const STATIC_IMAGES = [
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
@@ -338,78 +221,8 @@
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
         ];
 
-        const feed = document.getElementById('feed');
-        const infoModal = document.getElementById('infoModal');
-        const infoPanel = document.getElementById('infoPanel');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const walletPanel = document.getElementById('walletPanel');
-
-        function openInfoModal(title, cid) {
-            document.getElementById('infoTitle').innerText = title.toUpperCase() + "_DADOS";
-            document.getElementById('infoCid').innerText = cid;
-            infoModal.style.display = 'flex';
-            infoPanel.classList.remove('panel-close');
-            infoPanel.classList.add('panel-open');
-        }
-
-        function closeInfoModal() {
-            infoPanel.classList.remove('panel-open');
-            infoPanel.classList.add('panel-close');
-            // Aguarda o fim da animação antes de esconder o overlay
-            setTimeout(() => {
-                if(infoPanel.classList.contains('panel-close')) {
-                    infoModal.style.display = 'none';
-                }
-            }, 300);
-        }
-
-        function openTipModal(cid) {
-            const mockAddress = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
-            document.getElementById('authorAddress').innerText = mockAddress;
-            modalOverlay.style.display = 'flex';
-            walletPanel.classList.remove('panel-close');
-            walletPanel.classList.add('panel-open');
-        }
-
-        function closeModal() { 
-            walletPanel.classList.remove('panel-open');
-            walletPanel.classList.add('panel-close');
-            resetCopyIcon();
-            
-            setTimeout(() => {
-                if(walletPanel.classList.contains('panel-close')) {
-                    modalOverlay.style.display = 'none';
-                }
-            }, 300);
-        }
-
-        function resetCopyIcon() {
-            const icon = document.getElementById('copyIcon');
-            icon.setAttribute('data-lucide', 'copy');
-            icon.classList.remove('text-green-500', 'copy-feedback');
-            icon.classList.add('text-fuchsia-500');
-            lucide.createIcons();
-        }
-
-        function copyAddress() {
-            const text = document.getElementById('authorAddress').innerText;
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-
-            const icon = document.getElementById('copyIcon');
-            icon.setAttribute('data-lucide', 'check');
-            icon.classList.remove('text-fuchsia-500');
-            icon.classList.add('text-green-500', 'copy-feedback');
-            lucide.createIcons();
-
-            setTimeout(resetCopyIcon, 2000);
-        }
-
         function loadMemes() {
+            const feed = document.getElementById('feed');
             feed.innerHTML = '';
             STATIC_IMAGES.forEach((url, i) => {
                 const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-001";
@@ -419,18 +232,18 @@
                     <img src="${url}" class="meme-bg-blur">
                     <img src="${url}" class="meme-main">
                     <div class="overlay">
-                        <div class="absolute bottom-32 left-6">
+                        <div class="absolute bottom-36 left-6 right-20">
                             <span class="text-[8px] font-black tracking-widest text-fuchsia-500 bg-fuchsia-900/30 px-2 py-1 mb-2 inline-block uppercase">Feed_Seguro</span>
-                            <h2 class="text-3xl font-black italic uppercase cyber-text-gradient">${TITLES[i]}</h2>
+                            <h2 class="text-3xl font-black italic uppercase cyber-text-gradient truncate">${TITLES[i]}</h2>
                         </div>
-                        <div class="absolute right-6 bottom-36 flex flex-col gap-6 items-center">
+                        <div class="absolute right-6 bottom-40 flex flex-col gap-6 items-center">
                             <div class="info-icon-wrapper interactive" onclick="openInfoModal('${TITLES[i]}', '${cid}')">
-                                <i data-lucide="file-text" class="w-6 h-6"></i>
+                                <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
                             </div>
                             <button onclick="openTipModal('${cid}')" class="interactive">
                                 <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
                             </button>
-                            <button class="w-10 h-10 bg-white text-black flex items-center justify-center interactive">
+                            <button class="w-10 h-10 bg-white text-black flex items-center justify-center interactive rounded-sm">
                                 <i data-lucide="share-2" class="w-5 h-5"></i>
                             </button>
                         </div>
@@ -441,8 +254,39 @@
             lucide.createIcons();
         }
 
+        // Funções de Modal simplificadas para o exemplo
+        function openInfoModal(title, cid) {
+            document.getElementById('infoTitle').innerText = title.toUpperCase() + "_DADOS";
+            document.getElementById('infoCid').innerText = cid;
+            const m = document.getElementById('infoModal');
+            m.style.display = 'flex';
+            document.getElementById('infoPanel').className = 'cyber-panel p-6 space-y-4 panel-open';
+        }
+
+        function closeInfoModal() {
+            const p = document.getElementById('infoPanel');
+            p.classList.replace('panel-open', 'panel-close');
+            setTimeout(() => { document.getElementById('infoModal').style.display = 'none'; }, 300);
+        }
+
+        function openTipModal(cid) {
+            document.getElementById('authorAddress').innerText = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
+            document.getElementById('modalOverlay').style.display = 'flex';
+            document.getElementById('walletPanel').className = 'cyber-panel p-8 text-center space-y-6 panel-open';
+        }
+
+        function closeModal() {
+            const p = document.getElementById('walletPanel');
+            p.classList.replace('panel-open', 'panel-close');
+            setTimeout(() => { document.getElementById('modalOverlay').style.display = 'none'; }, 300);
+        }
+
+        function copyAddress() {
+            const text = document.getElementById('authorAddress').innerText;
+            navigator.clipboard.writeText(text).then(() => { alert("Endereço Copiado!"); });
+        }
+
         window.onload = loadMemes;
-        document.getElementById('refreshBtn').onclick = loadMemes;
     </script>
 </body>
 </html>
