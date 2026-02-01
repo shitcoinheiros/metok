@@ -220,13 +220,13 @@
     <div id="modalOverlay" class="modal-base" onclick="closeModal()">
         <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
             <div class="flex flex-col items-center space-y-2">
-                <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500">
+                <img src="https://ipfs.io/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4" class="w-16 h-16 rounded-full border-2 border-fuchsia-500">
                 <h3 class="text-xl font-black italic text-fuchsia-500 uppercase">WOW TIP</h3>
-        <p class=  "font-mono text-[9px] text-zinc-300 break-all">      Give the creator a few coins and you can download the image to use wherever you want: profile picture, social media... </p>
+                <p class="font-mono text-[9px] text-zinc-300 break-all">Give the creator a few coins and you can download the image to use wherever you want: profile picture, social media...</p>
             </div>
             
             <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50 flex flex-col items-center gap-3 cursor-pointer group active:scale-95 transition-transform" onclick="copyAddress()">
-                <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all"></p>
+                <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all">WW2ok7ZN8sJ7WP6FgoyoPMMUR7XLDCk7LXf4e6KnhHLUGpo8kp1dBJxeyzm4TFJWZxU5Jkibw7MayZaCD2trr64j38EqiD8Wq</p>
                 <div class="flex items-center gap-2 text-fuchsia-500 uppercase font-black text-[8px] tracking-widest">
                     <span id="copyText">Copy Address</span>
                     <div id="copyIconContainer">
@@ -256,8 +256,7 @@
     </nav>
 
     <script>
-        const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
-        const WALLET_IMG = "https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=" + TOKEN;
+        const WALLET_IMG = "https://ipfs.io/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4";
         
         const TITLES = ["Court Jester", "Commoner", "Soldier", "Mercenary", "Farmer", "Knight", "Baron", "Lord", "King"];
         
@@ -274,15 +273,15 @@
         };
 
         const STATIC_IMAGES = [
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreihhfml7xnqlbpbu2igxju62lqn3rp4yfqpus5ltrinf3t6j5nnamu?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreih44u5662jytegch5rqftwqhhnchqb5bojzpme2foixpw5doheflm?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreibd647tf3fueia3sv24me3h67tuvzusqmhyzobcv7wadhj555te4a?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiecr5bmaimbhj27efnlkhefvoxdpjzmiq4gw2ed4zldr5qomu46yq?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreigzcn52vafn7bugsaaq5zf7ovdf7hsyvyo5e4hrtusxjhma3mv5xu?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreiha6da4u7mzxfacizxdlcuyt6jmdn3jz3yrlnxcoadny6zhojknke?pinataGatewayToken=${TOKEN}`,
-            `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga?pinataGatewayToken=${TOKEN}`
+            "https://ipfs.io/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive",
+            "https://ipfs.io/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu",
+            "https://ipfs.io/ipfs/bafkreihhfml7xnqlbpbu2igxju62lqn3rp4yfqpus5ltrinf3t6j5nnamu",
+            "https://ipfs.io/ipfs/bafkreih44u5662jytegch5rqftwqhhnchqb5bojzpme2foixpw5doheflm",
+            "https://ipfs.io/ipfs/bafkreibd647tf3fueia3sv24me3h67tuvzusqmhyzobcv7wadhj555te4a",
+            "https://ipfs.io/ipfs/bafkreiecr5bmaimbhj27efnlkhefvoxdpjzmiq4gw2ed4zldr5qomu46yq",
+            "https://ipfs.io/ipfs/bafkreigzcn52vafn7bugsaaq5zf7ovdf7hsyvyo5e4hrtusxjhma3mv5xu",
+            "https://ipfs.io/ipfs/bafkreiha6da4u7mzxfacizxdlcuyt6jmdn3jz3yrlnxcoadny6zhojknke",
+            "https://ipfs.io/ipfs/bafkreifoqhkkrgvi5pslepyvlmqbjxgfbmqsq5h2hwqufuhmomu2ayx2ga"
         ];
 
         let unlockedCids = new Set();
@@ -405,7 +404,7 @@
 
         function openTipModal(cid) {
             currentActiveCid = cid;
-            document.getElementById('authorAddress').innerText = `WOWN-${cid.substring(0, 16).toUpperCase()}`;
+            // O endereço agora é fixo, então não precisamos mais gerar dinamicamente
             resetCopyState();
             document.getElementById('modalOverlay').style.display = 'flex';
             document.getElementById('walletPanel').className = 'cyber-panel p-8 text-center space-y-6 panel-open';
@@ -421,7 +420,7 @@
         function resetCopyState() {
             const container = document.getElementById('copyIconContainer');
             const text = document.getElementById('copyText');
-            text.innerText = "Copy";
+            text.innerText = "Copy Address";
             text.className = "text-fuchsia-500 uppercase font-black text-[8px] tracking-widest";
             container.innerHTML = '<i id="copyIcon" data-lucide="copy" class="w-4 h-4 text-fuchsia-500"></i>';
             lucide.createIcons();
@@ -443,7 +442,9 @@
                 lucide.createIcons();
                 if (currentActiveCid) unlockDownloadForCid(currentActiveCid);
                 setTimeout(resetCopyState, 2000);
-            } catch (err) {}
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+            }
             document.body.removeChild(textArea);
         }
 
