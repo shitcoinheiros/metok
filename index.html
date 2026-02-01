@@ -199,7 +199,7 @@
         <div id="infoPanel" class="cyber-panel p-6 space-y-4" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start border-b border-fuchsia-900/50 pb-2">
                 <div>
-                    <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500 uppercase">CLASSIFICADO</h3>
+                    <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500 uppercase">CLASSIFIED</h3>
                     <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.3em]">Neural Connection: Active</p>
                 </div>
                 <div class="text-[8px] font-mono text-fuchsia-600">WOW: NOP-4.1</div>
@@ -221,7 +221,8 @@
         <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
             <div class="flex flex-col items-center space-y-2">
                 <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500">
-                <h3 class="text-xl font-black italic text-fuchsia-500 uppercase">WOW_TIP</h3>
+                <h3 class="text-xl font-black italic text-fuchsia-500 uppercase">WOW TIP</h3><br>
+        <p class=  "font-mono text-[9px] text-zinc-300 break-all">      Give the creator a few coins and you can download the image to use wherever you want: profile picture, social media... </p>
             </div>
             
             <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50 flex flex-col items-center gap-3 cursor-pointer group active:scale-95 transition-transform" onclick="copyAddress()">
@@ -247,7 +248,7 @@
             <i data-lucide="refresh-cw" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
         <button id="uploadBtn" class="bg-fuchsia-600 h-12 px-8 font-black text-[10px] tracking-widest text-white uppercase interactive shadow-[0_0_20px_#ff00ff]">
-            Data
+            WOW NOP
         </button>
         <button class="w-12 h-12 bg-zinc-950/90 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
             <i data-lucide="shield-check" class="w-5 h-5 text-fuchsia-500"></i>
@@ -388,7 +389,7 @@
         }
 
         function openInfoModal(title, cid) {
-            document.getElementById('infoTitle').innerText = title.toUpperCase() + "_DADOS";
+            document.getElementById('infoTitle').innerText = title.toUpperCase() + "_ART";
             document.getElementById('infoCid').innerText = cid;
             document.getElementById('infoDescription').innerText = DESCRIPTIONS[title] || "DADOS CORROMPIDOS OU NÃO ENCONTRADOS NO BANCO CENTRAL.";
             
@@ -420,7 +421,7 @@
         function resetCopyState() {
             const container = document.getElementById('copyIconContainer');
             const text = document.getElementById('copyText');
-            text.innerText = "Copiar Endereço";
+            text.innerText = "Copy";
             text.className = "text-fuchsia-500 uppercase font-black text-[8px] tracking-widest";
             container.innerHTML = '<i id="copyIcon" data-lucide="copy" class="w-4 h-4 text-fuchsia-500"></i>';
             lucide.createIcons();
@@ -436,7 +437,7 @@
                 document.execCommand('copy');
                 const container = document.getElementById('copyIconContainer');
                 const textLabel = document.getElementById('copyText');
-                textLabel.innerText = "Endereço Copiado!";
+                textLabel.innerText = "Copied!";
                 textLabel.className = "text-green-400 uppercase font-black text-[8px] tracking-widest animate-pulse";
                 container.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
                 lucide.createIcons();
