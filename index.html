@@ -199,17 +199,20 @@
         <div id="infoPanel" class="cyber-panel p-6 space-y-4" onclick="event.stopPropagation()">
             <div class="flex justify-between items-start border-b border-fuchsia-900/50 pb-2">
                 <div>
-                    <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500">REGISTO_CLASSIFICADO</h3>
-                    <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.3em]">Ligação Neural: Ativa</p>
+                    <h3 id="infoTitle" class="text-lg font-black tracking-tighter text-fuchsia-500 uppercase">CLASSIFICADO</h3>
+                    <p class="text-[7px] text-fuchsia-700 uppercase tracking-[0.3em]">Neural Connection: Active</p>
                 </div>
                 <div class="text-[8px] font-mono text-fuchsia-600">WOW: NOP-4.1</div>
             </div>
             <div class="space-y-4 py-2">
                 <p id="infoCid" class="font-mono text-[9px] text-zinc-300 break-all bg-fuchsia-950/20 p-2 border-l-2 border-fuchsia-600"></p>
-                <p class="text-[10px] text-zinc-300 italic">WOWNERS-OPERATIVE</p>
+                <div id="infoDescription" class="text-[11px] text-zinc-300 leading-relaxed border-t border-fuchsia-900/30 pt-3">
+                    <!-- Descrição dinâmica -->
+                </div>
+                <p class="text-[9px] text-fuchsia-500/50 italic font-mono uppercase tracking-tighter">NOP-V1</p>
             </div>
             <button onclick="closeInfoModal()" class="w-full py-3 bg-fuchsia-600 text-white font-black text-[9px] tracking-widest uppercase">
-                Confirmar Recebimento
+                OK
             </button>
         </div>
     </div>
@@ -218,13 +221,13 @@
         <div id="walletPanel" class="cyber-panel p-8 text-center space-y-6" onclick="event.stopPropagation()">
             <div class="flex flex-col items-center space-y-2">
                 <img src="https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy" class="w-16 h-16 rounded-full border-2 border-fuchsia-500">
-                <h3 class="text-xl font-black italic text-fuchsia-500 uppercase">Transferir_Créditos</h3>
+                <h3 class="text-xl font-black italic text-fuchsia-500 uppercase">WOW_TIP</h3>
             </div>
             
             <div class="bg-zinc-900/50 p-4 border border-fuchsia-900/50 flex flex-col items-center gap-3 cursor-pointer group active:scale-95 transition-transform" onclick="copyAddress()">
                 <p id="authorAddress" class="font-mono text-[9px] text-zinc-300 break-all"></p>
                 <div class="flex items-center gap-2 text-fuchsia-500 uppercase font-black text-[8px] tracking-widest">
-                    <span id="copyText">Copiar Endereço</span>
+                    <span id="copyText">Copy Address</span>
                     <div id="copyIconContainer">
                         <i id="copyIcon" data-lucide="copy" class="w-4 h-4"></i>
                     </div>
@@ -232,7 +235,7 @@
             </div>
 
             <button onclick="closeModal()" class="w-full py-3 border border-fuchsia-600 text-fuchsia-500 font-black text-[9px] uppercase">
-                Abortar Operação
+                Close
             </button>
         </div>
     </div>
@@ -244,7 +247,7 @@
             <i data-lucide="refresh-cw" class="w-5 h-5 text-fuchsia-500"></i>
         </button>
         <button id="uploadBtn" class="bg-fuchsia-600 h-12 px-8 font-black text-[10px] tracking-widest text-white uppercase interactive shadow-[0_0_20px_#ff00ff]">
-            ENVIAR_DADOS
+            Data
         </button>
         <button class="w-12 h-12 bg-zinc-950/90 border border-fuchsia-900 rounded-sm flex items-center justify-center interactive">
             <i data-lucide="shield-check" class="w-5 h-5 text-fuchsia-500"></i>
@@ -254,7 +257,21 @@
     <script>
         const TOKEN = "rvql9zxKkdeVN4VWad1uWsrCW4sOqsyyh_8J_dl2814Xg2Oct5KabUb6PhSd6Rdy";
         const WALLET_IMG = "https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafybeiatwh6t6ep7vpx34scuwpsjnkcysnp6bjrmtlxrt36q2lhyitfxx4?pinataGatewayToken=" + TOKEN;
-        const TITLES = ["Bobo da Corte", "Plebeu", "Soldado", "Mercenário", "Agricultor", "Cavaleiro", "Barão", "Lorde", "Rei"];
+        
+        const TITLES = ["Court Jester", "Commoner", "Soldier", "Mercenary", "Farmer", "Knight", "Baron", "Lord", "King"];
+        
+        const DESCRIPTIONS = {
+            "Bobo da Corte": "The holder of this NOP lives on conventional humor and is only now experiencing privacy; the poor wretch doesn't even own 20 units of WOW.",
+            "Plebeu": "The holder of the Commoner NOP is a low-class Neo-Feudal citizen. He survives by trading data packets to feed his addictions and his family; he has less than 100 WOW.",
+            "Soldado": "The soldier holding this NOP is an armed arm of the central garrison; he possesses up to 300 WOW but is programmed to receive attack orders from the administration. His greatest dream is to accumulate enough to one day become a knight.",
+            "Mercenário": "The holder of this NOP is a freelancer of chaos. He doesn't serve kings or administrators; he's a servant of whoever gives the most tips. A specialist in guerrilla marketing, he has no dreams or goals, he just wants to spread the word of WOW on the city walls; he's a holder of up to a thousand WOWs.",
+            "Agricultor": "The holder of this NOP cultivates WOW on their digital mining farms, living a peaceful life away from the chaos of speculation wars; they have up to three thousand WOW accumulated through cultivation.",
+            "Cavaleiro": "The holder of this NOP is a warrior knight; he is friendly with the elite wowners and protects digital trade routes with a sharp blade and a code of honor; privacy in his technical wallet can easily be found for up to ten thousand WOW.",
+            "Barão": "Baron, the controller of the industrial sector, the holder of this NOP, has influence measured in terabytes of secrets and properties; he possesses power and authority over the most valuable assets of the community; in his portfolio you can easily find up to fifty thousand WOW.",
+            "Lorde": "The holder of this NOP is a high-ranking member of the network. They have lifetime access to the top echelons and have conscious power governing thousands of neural connections; their portfolio has up to three hundred thousand WOWs.",
+            "Rei": "The king, the architect of the system, he was here when it all began. His will is law in code. He is at the top of the network pyramid where the dice meet absolute power; in your wallet you will see more than three hundred thousand WOWs."
+        };
+
         const STATIC_IMAGES = [
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreicusom7dskllylnckfzmqgswlgj3poty7njomvhnbkrglppebyive?pinataGatewayToken=${TOKEN}`,
             `https://jade-detailed-slug-469.mypinata.cloud/ipfs/bafkreias3efcqh4tlan43g2nzbupbezye7zoiu2ucqwilh53xr23wk4jlu?pinataGatewayToken=${TOKEN}`,
@@ -273,6 +290,7 @@
         function createMemeItem(url, index) {
             const cid = url.match(/\/ipfs\/([^?]+)/)?.[1] || "UNKN-00"+index;
             const isUnlocked = unlockedCids.has(cid);
+            const title = TITLES[index % TITLES.length];
             const item = document.createElement('div');
             item.className = 'snap-item';
             item.dataset.cid = cid;
@@ -282,16 +300,16 @@
                 <div class="overlay">
                     <div class="absolute bottom-36 left-6 right-20">
                         <span class="text-[8px] font-black tracking-widest text-fuchsia-500 bg-fuchsia-900/30 px-2 py-1 mb-2 inline-block uppercase">WOW_NOP</span>
-                        <h2 class="text-3xl font-black italic uppercase cyber-text-gradient truncate">${TITLES[index % TITLES.length]}</h2>
+                        <h2 class="text-3xl font-black italic uppercase cyber-text-gradient truncate">${title}</h2>
                     </div>
                     <div class="absolute right-6 bottom-40 flex flex-col gap-6 items-center">
-                        <div class="action-button interactive" onclick="openInfoModal('${TITLES[index % TITLES.length]}', '${cid}')">
+                        <div class="action-button interactive" onclick="openInfoModal('${title}', '${cid}')">
                             <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
                         </div>
                         <button onclick="openTipModal('${cid}')" class="interactive">
                             <img src="${WALLET_IMG}" class="wallet-img-btn" alt="Tip">
                         </button>
-                        <button onclick="downloadImage(this, '${url}', '${TITLES[index % TITLES.length]}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isUnlocked ? 'unlocked' : ''}">
+                        <button onclick="downloadImage(this, '${url}', '${title}')" class="download-btn w-12 h-12 rounded-full flex items-center justify-center interactive ${isUnlocked ? 'unlocked' : ''}">
                             <i data-lucide="download" class="w-6 h-6 text-white"></i>
                         </button>
                     </div>
@@ -304,33 +322,23 @@
             const feed = document.getElementById('feed');
             feed.innerHTML = '';
             
-            // Loop Infinito: Adicionamos o último item no início e o primeiro no fim
-            // Isso permite que o scroll-snap "salte" sem o usuário perceber.
-            
-            // 1. Clone do último
+            // Loop Infinito: Adicionamos clones para continuidade no scroll
             feed.appendChild(createMemeItem(STATIC_IMAGES[STATIC_IMAGES.length - 1], STATIC_IMAGES.length - 1));
             
-            // 2. Itens Reais
             STATIC_IMAGES.forEach((url, i) => {
                 feed.appendChild(createMemeItem(url, i));
             });
 
-            // 3. Clone do primeiro
             feed.appendChild(createMemeItem(STATIC_IMAGES[0], 0));
 
             lucide.createIcons();
-
-            // Começar no item "real" (índice 1, já que o 0 é o clone)
             feed.scrollTop = window.innerHeight;
 
-            // Listener de Scroll para o Loop
             feed.addEventListener('scroll', () => {
                 const height = window.innerHeight;
-                // Se chegou no clone do topo (último item disfarçado)
                 if (feed.scrollTop <= 0) {
                     feed.scrollTop = feed.scrollHeight - (2 * height);
                 } 
-                // Se chegou no clone do fundo (primeiro item disfarçado)
                 else if (feed.scrollTop >= feed.scrollHeight - height) {
                     feed.scrollTop = height;
                 }
@@ -382,6 +390,8 @@
         function openInfoModal(title, cid) {
             document.getElementById('infoTitle').innerText = title.toUpperCase() + "_DADOS";
             document.getElementById('infoCid').innerText = cid;
+            document.getElementById('infoDescription').innerText = DESCRIPTIONS[title] || "DADOS CORROMPIDOS OU NÃO ENCONTRADOS NO BANCO CENTRAL.";
+            
             document.getElementById('infoModal').style.display = 'flex';
             document.getElementById('infoPanel').className = 'cyber-panel p-6 space-y-4 panel-open';
         }
